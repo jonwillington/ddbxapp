@@ -1,0 +1,57 @@
+name: DdbxApp
+options:
+  bundleIdPrefix: uk.ddbx
+  deploymentTarget:
+    iOS: "26.0"
+  xcodeVersion: "16.0"
+  generateEmptyDirectories: true
+
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    TARGETED_DEVICE_FAMILY: "1"
+    ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+    DEVELOPMENT_TEAM: "DT649V63HR"
+
+targets:
+  DdbxApp:
+    type: application
+    platform: iOS
+    sources:
+      - path: Sources/DdbxApp
+        excludes:
+          - Resources/**
+      - path: Sources/DdbxApp/Resources/Assets.xcassets
+        buildPhase: resources
+      - path: Sources/DdbxApp/Resources/Fonts
+        type: folder
+        buildPhase: resources
+    info:
+      path: Sources/DdbxApp/Info.plist
+      properties:
+        CFBundleDisplayName: ddbx
+        LSRequiresIPhoneOS: true
+        UIAppFonts:
+          - Fonts/InstrumentSans-Regular.ttf
+          - Fonts/InstrumentSans-Medium.ttf
+          - Fonts/InstrumentSans-SemiBold.ttf
+          - Fonts/InstrumentSans-Bold.ttf
+          - Fonts/InstrumentSans-Italic.ttf
+          - Fonts/InstrumentSans-MediumItalic.ttf
+          - Fonts/InstrumentSans-SemiBoldItalic.ttf
+          - Fonts/InstrumentSans-BoldItalic.ttf
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: false
+        BGTaskSchedulerPermittedIdentifiers:
+          - uk.ddbx.app.refresh
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: uk.ddbx.app
+        PRODUCT_NAME: ddbx
+        TARGETED_DEVICE_FAMILY: "1"
+        MARKETING_VERSION: "1.0.0"
+        CURRENT_PROJECT_VERSION: 2
+        CODE_SIGN_ENTITLEMENTS: Sources/DdbxApp/DdbxApp.entitlements
