@@ -4,9 +4,15 @@ struct AppSettingsSheet: View {
     @Environment(\.ddbxColors) private var colors
     @Environment(\.dismiss) private var dismiss
     @Environment(AppSettings.self) private var settings
+    @Environment(PushManager.self) private var pushManager
 
     var body: some View {
         @Bindable var s = settings
+        @Bindable var push = pushManager
+        let notifyAllBinding = Binding<Bool>(
+            get: { pushManager.notifyLevel == .all },
+            set: { pushManager.notifyLevel = $0 ? .all : .noteworthy }
+        )
         NavigationStack {
             ZStack {
                 colors.background.ignoresSafeArea()
@@ -73,6 +79,27 @@ struct AppSettingsSheet: View {
                             .tracking(0.5)
                     } footer: {
                         Text("Used to compare deal performance against the broader market.")
+                            .font(.instrument(size: 12))
+                            .foregroundStyle(colors.muted)
+                    }
+
+                    // MARK: - Notifications
+                    Section {
+                        Toggle(isOn: notifyAllBinding) {
+                            Text("Notify on every buy")
+                                .font(.instrument(size: 15))
+                                .foregroundStyle(colors.foreground)
+                        }
+                        .tint(colors.accent)
+                        .listRowBackground(colors.surface)
+                    } header: {
+                        Text("Notifications")
+                            .font(.instrument(.semiBold, size: 12))
+                            .foregroundStyle(colors.muted)
+                            .textCase(.uppercase)
+                            .tracking(0.5)
+                    } footer: {
+                        Text("Off: only significant & noteworthy trades. On: every analyzed buy.")
                             .font(.instrument(size: 12))
                             .foregroundStyle(colors.muted)
                     }

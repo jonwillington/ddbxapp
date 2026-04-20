@@ -14,6 +14,11 @@ struct PushNotificationRecord: Codable, Identifiable, Sendable {
 
 // MARK: - Push manager
 
+enum NotifyLevel: String, Codable, Sendable {
+    case noteworthy
+    case all
+}
+
 @Observable @MainActor
 final class PushManager: NSObject {
     private(set) var isRegistered = false
@@ -26,7 +31,28 @@ final class PushManager: NSObject {
     /// Most-recent-first history of received push notifications (max 50)
     private(set) var notificationHistory: [PushNotificationRecord] = []
 
+    private static let notifyLevelKey = "ddbx.notifyLevel"
+
+    /// Per-device notification level. `.noteworthy` = significant+noteworthy only (default),
+    /// `.all` = every analyzed buy. Persisted and re-sent on change.
+    var notifyLevel: NotifyLevel {
+        didSet {
+            guard oldValue != notifyLevel else { return }
+            UserDefaults.standard.set(notifyLevel.rawValue, forKey: Self.notifyLevelKey)
+            if let token = deviceToken {
+                Task { await registerWithServer(token: token) }
+            }
+        }
+    }
+
     override init() {
+        if let raw = UserDefaults.standard.string(forKey: Self.notifyLevelKey),
+           let level = NotifyLevel(rawValue: raw) {
+            notifyLevel = level
+        } else {
+            notifyLevel = .noteworthy
+        }
+        super.init()
         if let data = UserDefaults.standard.data(forKey: "ddbx.notificationHistory"),
            let records = try? JSONDecoder().decode([PushNotificationRecord].self, from: data) {
             notificationHistory = records
@@ -94,6 +120,7 @@ final class PushManager: NSObject {
             "token": token,
             "environment": environment,
             "timezone": TimeZone.current.identifier,
+            "notify_level": notifyLevel.rawValue,
         ]
 
         do {

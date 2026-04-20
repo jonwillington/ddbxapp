@@ -68,6 +68,7 @@ struct DashboardView: View {
             .sheet(isPresented: $showSettings) {
                 AppSettingsSheet()
                     .environment(settings)
+                    .environment(pushManager)
             }
             .sheet(isPresented: $showNotifications) {
                 NotificationsSheet()
