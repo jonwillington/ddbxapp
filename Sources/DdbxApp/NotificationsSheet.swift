@@ -3,7 +3,7 @@ import SwiftUI
 struct NotificationsSheet: View {
     @Environment(\.ddbxColors) private var colors
     @Environment(\.dismiss) private var dismiss
-    @Environment(PushManager.self) private var pushManager
+    @EnvironmentObject private var pushManager: PushManager
 
     var body: some View {
         NavigationStack {
@@ -27,7 +27,7 @@ struct NotificationsSheet: View {
             .navigationTitle("Notifications")
             .navigationBarTitleDisplayMode(.inline)
             .toolbarBackground(colors.background, for: .navigationBar)
-            .toolbarBackgroundVisibility(.visible, for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Done") { dismiss() }
@@ -37,7 +37,7 @@ struct NotificationsSheet: View {
             }
         }
         .presentationDetents([.medium, .large])
-        .presentationBackground(colors.background)
+        .ddbxPresentationBackground(colors.background)
         .presentationDragIndicator(.visible)
     }
 
@@ -49,7 +49,7 @@ struct NotificationsSheet: View {
             Text("No notifications yet")
                 .font(.instrument(.semiBold, size: 15))
                 .foregroundStyle(colors.foreground)
-            Text("Push alerts for new director dealings will appear here.")
+            Text(DashboardView.noDealsSubtitle())
                 .font(.instrument(size: 13))
                 .foregroundStyle(colors.muted)
                 .multilineTextAlignment(.center)

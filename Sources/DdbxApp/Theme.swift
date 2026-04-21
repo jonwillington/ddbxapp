@@ -92,17 +92,16 @@ enum ValueColumnMetric: String, CaseIterable, Codable {
 
 // MARK: - App settings
 
-@Observable
-final class AppSettings {
-    var appearance: Appearance = .system {
+final class AppSettings: ObservableObject {
+    @Published var appearance: Appearance = .system {
         didSet { UserDefaults.standard.set(appearance.rawValue, forKey: "ddbx.appearance") }
     }
 
-    var valueColumnMetric: ValueColumnMetric = .dealSize {
+    @Published var valueColumnMetric: ValueColumnMetric = .dealSize {
         didSet { UserDefaults.standard.set(valueColumnMetric.rawValue, forKey: "ddbx.valueColumnMetric") }
     }
 
-    var marketBenchmark: MarketBenchmark = .ftseAllShare {
+    @Published var marketBenchmark: MarketBenchmark = .ftseAllShare {
         didSet { UserDefaults.standard.set(marketBenchmark.rawValue, forKey: "ddbx.marketBenchmark") }
     }
 
@@ -204,6 +203,20 @@ extension EnvironmentValues {
     var ddbxColors: DdbxColors {
         get { self[DdbxColorsKey.self] }
         set { self[DdbxColorsKey.self] = newValue }
+    }
+}
+
+// MARK: - Availability helpers
+
+extension View {
+    /// Applies `.presentationBackground(_:)` on iOS 16.4+; no-op on iOS 16.0–16.3.
+    @ViewBuilder
+    func ddbxPresentationBackground<S: ShapeStyle>(_ style: S) -> some View {
+        if #available(iOS 16.4, *) {
+            self.presentationBackground(style)
+        } else {
+            self
+        }
     }
 }
 

@@ -19,23 +19,23 @@ enum NotifyLevel: String, Codable, Sendable {
     case all
 }
 
-@Observable @MainActor
-final class PushManager: NSObject {
-    private(set) var isRegistered = false
-    private(set) var permissionGranted = false
-    private(set) var deviceToken: String?
+@MainActor
+final class PushManager: NSObject, ObservableObject {
+    @Published private(set) var isRegistered = false
+    @Published private(set) var permissionGranted = false
+    @Published private(set) var deviceToken: String?
 
     /// Set by notification tap — the dashboard observes this to open a detail sheet
-    var pendingDealingId: String?
+    @Published var pendingDealingId: String?
 
     /// Most-recent-first history of received push notifications (max 50)
-    private(set) var notificationHistory: [PushNotificationRecord] = []
+    @Published private(set) var notificationHistory: [PushNotificationRecord] = []
 
     private static let notifyLevelKey = "ddbx.notifyLevel"
 
     /// Per-device notification level. `.noteworthy` = significant+noteworthy only (default),
     /// `.all` = every analyzed buy. Persisted and re-sent on change.
-    var notifyLevel: NotifyLevel {
+    @Published var notifyLevel: NotifyLevel {
         didSet {
             guard oldValue != notifyLevel else { return }
             UserDefaults.standard.set(notifyLevel.rawValue, forKey: Self.notifyLevelKey)

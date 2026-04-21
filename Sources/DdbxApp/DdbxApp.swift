@@ -3,8 +3,8 @@ import SwiftUI
 @main
 struct DdbxApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
-    @State private var settings = AppSettings()
-    @State private var pushManager = PushManager()
+    @StateObject private var settings = AppSettings()
+    @StateObject private var pushManager = PushManager()
     @Environment(\.scenePhase) private var scenePhase
 
     init() {
@@ -22,15 +22,15 @@ struct DdbxApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
-                .environment(settings)
-                .environment(pushManager)
+                .environmentObject(settings)
+                .environmentObject(pushManager)
                 .preferredColorScheme(settings.appearance.colorScheme)
                 .task {
                     appDelegate.pushManager = pushManager
                     await pushManager.requestPermission()
                 }
         }
-        .onChange(of: scenePhase) { _, phase in
+        .onChange(of: scenePhase) { phase in
             if phase == .background {
                 BackgroundRefresh.scheduleNext()
             }

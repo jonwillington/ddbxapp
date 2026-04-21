@@ -2,7 +2,7 @@ import SwiftUI
 
 struct MetricsSettingsSheet: View {
     @Environment(\.ddbxColors) private var colors
-    @Environment(AppSettings.self) private var settings
+    @EnvironmentObject private var settings: AppSettings
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
@@ -64,7 +64,7 @@ struct MetricsSettingsSheet: View {
             .navigationTitle("Customise rows")
             .navigationBarTitleDisplayMode(.inline)
             .toolbarBackground(colors.background, for: .navigationBar)
-            .toolbarBackgroundVisibility(.visible, for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Done") { dismiss() }
@@ -74,6 +74,6 @@ struct MetricsSettingsSheet: View {
             }
         }
         .presentationDetents([.medium, .large])
-        .presentationBackground(colors.background)
+        .ddbxPresentationBackground(colors.background)
     }
 }

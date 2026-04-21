@@ -1,12 +1,12 @@
 import SwiftUI
 
 struct SearchView: View {
+    let onDismiss: () -> Void
+
     @Environment(\.ddbxColors) private var colors
-    @Environment(DashboardViewModel.self) private var vm
+    @EnvironmentObject private var vm: DashboardViewModel
     @State private var searchText = ""
     @State private var selectedDeal: Dealing?
-    @State private var showAbout = false
-    @FocusState private var searchFocused: Bool
 
     private var filteredDealings: [Dealing] {
         guard !searchText.isEmpty else { return [] }
@@ -32,20 +32,10 @@ struct SearchView: View {
                 }
             }
             .navigationTitle("")
-            .toolbarTitleDisplayMode(.inline)
+            .navigationBarTitleDisplayMode(.inline)
             .toolbarBackground(colors.background, for: .navigationBar)
-            .toolbarBackgroundVisibility(.visible, for: .navigationBar)
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    LogoButton(showAbout: $showAbout)
-                }
-            }
-            .sheet(isPresented: $showAbout) {
-                AboutSheet()
-            }
+            .toolbarBackground(.visible, for: .navigationBar)
             .searchable(text: $searchText, prompt: "Ticker, company, or director")
-            .searchFocused($searchFocused)
-            .onAppear { searchFocused = true }
             .sheet(item: $selectedDeal) { deal in
                 DealDetailView(deal: deal)
             }

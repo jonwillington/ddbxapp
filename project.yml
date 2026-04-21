@@ -2,7 +2,7 @@ name: DdbxApp
 options:
   bundleIdPrefix: uk.ddbx
   deploymentTarget:
-    iOS: "26.0"
+    iOS: "16.0"
   xcodeVersion: "16.0"
   generateEmptyDirectories: true
 
@@ -26,10 +26,14 @@ targets:
       - path: Sources/DdbxApp/Resources/Fonts
         type: folder
         buildPhase: resources
+      - path: Sources/DdbxApp/Resources/PrivacyInfo.xcprivacy
+        buildPhase: resources
     info:
       path: Sources/DdbxApp/Info.plist
       properties:
         CFBundleDisplayName: ddbx
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         LSRequiresIPhoneOS: true
         UIAppFonts:
           - Fonts/InstrumentSans-Regular.ttf
@@ -52,6 +56,6 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: uk.ddbx.app
         PRODUCT_NAME: ddbx
         TARGETED_DEVICE_FAMILY: "1"
-        MARKETING_VERSION: "1.0.0"
-        CURRENT_PROJECT_VERSION: 2
+        MARKETING_VERSION: "1.0.1"
+        CURRENT_PROJECT_VERSION: 3
         CODE_SIGN_ENTITLEMENTS: Sources/DdbxApp/DdbxApp.entitlements

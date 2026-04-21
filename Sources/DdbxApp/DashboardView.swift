@@ -2,9 +2,9 @@ import SwiftUI
 
 struct DashboardView: View {
     @Environment(\.ddbxColors) private var colors
-    @Environment(AppSettings.self) private var settings
-    @Environment(PushManager.self) private var pushManager
-    @Environment(DashboardViewModel.self) private var vm
+    @EnvironmentObject private var settings: AppSettings
+    @EnvironmentObject private var pushManager: PushManager
+    @EnvironmentObject private var vm: DashboardViewModel
     @State private var selectedDeal: Dealing?
     @State private var filter: DealFilter = .all
     @State private var sortMode: SortMode = .chronological
@@ -36,9 +36,9 @@ struct DashboardView: View {
                 }
             }
             .navigationTitle("")
-            .toolbarTitleDisplayMode(.inline)
+            .navigationBarTitleDisplayMode(.inline)
             .toolbarBackground(colors.background, for: .navigationBar)
-            .toolbarBackgroundVisibility(.visible, for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
             .refreshable {
                 await vm.refresh()
                 await vm.fetchLiftPrices(benchmarkTicker: settings.marketBenchmark.ticker)
@@ -67,30 +67,30 @@ struct DashboardView: View {
             }
             .sheet(isPresented: $showSettings) {
                 AppSettingsSheet()
-                    .environment(settings)
-                    .environment(pushManager)
+                    .environmentObject(settings)
+                    .environmentObject(pushManager)
             }
             .sheet(isPresented: $showNotifications) {
                 NotificationsSheet()
-                    .environment(pushManager)
+                    .environmentObject(pushManager)
             }
             .sheet(item: $selectedDeal) { deal in
                 DealDetailView(deal: deal)
             }
             .sheet(isPresented: $showRowSettings) {
                 MetricsSettingsSheet()
-                    .environment(settings)
+                    .environmentObject(settings)
             }
         }
         .task { vm.startPolling() }
-        .onChange(of: vm.dealings.isEmpty) { _, isEmpty in
+        .onChange(of: vm.dealings.isEmpty) { isEmpty in
             // Prices always needed — trend line on every row uses liftPct
             if !isEmpty { Task { await vm.fetchLiftPrices(benchmarkTicker: settings.marketBenchmark.ticker) } }
         }
-        .onChange(of: settings.marketBenchmark) { _, _ in
+        .onChange(of: settings.marketBenchmark) { _ in
             Task { await vm.fetchLiftPrices(benchmarkTicker: settings.marketBenchmark.ticker) }
         }
-        .onChange(of: pushManager.pendingDealingId) { _, dealingId in
+        .onChange(of: pushManager.pendingDealingId) { dealingId in
             guard let dealingId else { return }
             pushManager.pendingDealingId = nil
             if let deal = vm.dealings.first(where: { $0.id == dealingId }) {
@@ -350,9 +350,10 @@ struct DashboardView: View {
             Text("No deals have happened yet today")
                 .font(.instrument(.semiBold, size: 15))
                 .foregroundStyle(colors.foreground)
-            Text("Pull to refresh or check back later")
+            Text(Self.noDealsSubtitle())
                 .font(.instrument(size: 13))
                 .foregroundStyle(colors.muted)
+                .multilineTextAlignment(.center)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 28)
@@ -364,6 +365,21 @@ struct DashboardView: View {
         )
         .padding(.horizontal, 16)
         .padding(.vertical, 8)
+    }
+
+    /// Contextual subtitle for the empty-today card.
+    /// Weekend → relax. Weekday before noon → pre-open. Weekday noon+ → day's done.
+    static func noDealsSubtitle(now: Date = Date()) -> String {
+        var cal = Calendar(identifier: .gregorian)
+        cal.timeZone = TimeZone(identifier: "Europe/London") ?? .current
+        let weekday = cal.component(.weekday, from: now) // 1=Sun … 7=Sat
+        if weekday == 1 || weekday == 7 {
+            return "Markets closed for the weekend. Get some sunlight."
+        }
+        let hour = cal.component(.hour, from: now)
+        return hour < 12
+            ? "Pour your coffee, the market opens soon."
+            : "Check back tomorrow, get some sleep."
     }
 
     // MARK: - Day section

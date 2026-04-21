@@ -24,9 +24,9 @@ struct NewsView: View {
                 }
             }
             .navigationTitle("")
-            .toolbarTitleDisplayMode(.inline)
+            .navigationBarTitleDisplayMode(.inline)
             .toolbarBackground(colors.background, for: .navigationBar)
-            .toolbarBackgroundVisibility(.visible, for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     LogoButton(showAbout: $showAbout)

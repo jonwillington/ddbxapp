@@ -3,12 +3,10 @@ import SwiftUI
 struct AppSettingsSheet: View {
     @Environment(\.ddbxColors) private var colors
     @Environment(\.dismiss) private var dismiss
-    @Environment(AppSettings.self) private var settings
-    @Environment(PushManager.self) private var pushManager
+    @EnvironmentObject private var settings: AppSettings
+    @EnvironmentObject private var pushManager: PushManager
 
     var body: some View {
-        @Bindable var s = settings
-        @Bindable var push = pushManager
         let notifyAllBinding = Binding<Bool>(
             get: { pushManager.notifyLevel == .all },
             set: { pushManager.notifyLevel = $0 ? .all : .noteworthy }
@@ -22,7 +20,7 @@ struct AppSettingsSheet: View {
                     Section {
                         ForEach(Appearance.allCases, id: \.self) { option in
                             Button {
-                                s.appearance = option
+                                settings.appearance = option
                             } label: {
                                 HStack {
                                     Text(option.label)
@@ -50,7 +48,7 @@ struct AppSettingsSheet: View {
                     Section {
                         ForEach(MarketBenchmark.allCases, id: \.self) { benchmark in
                             Button {
-                                s.marketBenchmark = benchmark
+                                settings.marketBenchmark = benchmark
                             } label: {
                                 HStack {
                                     VStack(alignment: .leading, spacing: 2) {
@@ -110,7 +108,7 @@ struct AppSettingsSheet: View {
             .navigationTitle("Settings")
             .navigationBarTitleDisplayMode(.inline)
             .toolbarBackground(colors.background, for: .navigationBar)
-            .toolbarBackgroundVisibility(.visible, for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Done") { dismiss() }
@@ -120,7 +118,7 @@ struct AppSettingsSheet: View {
             }
         }
         .presentationDetents([.medium, .large])
-        .presentationBackground(colors.background)
+        .ddbxPresentationBackground(colors.background)
         .presentationDragIndicator(.visible)
     }
 }

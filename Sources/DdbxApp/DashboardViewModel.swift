@@ -1,10 +1,10 @@
 import Foundation
 
-@Observable @MainActor
-final class DashboardViewModel {
-    private(set) var dealings: [Dealing] = []
-    private(set) var isLoading = false
-    private(set) var error: String?
+@MainActor
+final class DashboardViewModel: ObservableObject {
+    @Published private(set) var dealings: [Dealing] = []
+    @Published private(set) var isLoading = false
+    @Published private(set) var error: String?
 
     private var versionFingerprint: String?
     private var pollingTask: Task<Void, Never>?
@@ -130,10 +130,10 @@ final class DashboardViewModel {
 
     // MARK: - Lift + FTSE
 
-    private(set) var liftPrices: [String: Double] = [:]  // ticker → latest price_pence
-    private(set) var ftseHistory: [PriceBar] = []
-    private(set) var ftseLatest: Double?
-    private(set) var liftLoading = false
+    @Published private(set) var liftPrices: [String: Double] = [:]  // ticker → latest price_pence
+    @Published private(set) var ftseHistory: [PriceBar] = []
+    @Published private(set) var ftseLatest: Double?
+    @Published private(set) var liftLoading = false
 
     func fetchLiftPrices(benchmarkTicker: String = "^FTAS") async {
         guard !liftLoading else { return }

@@ -10,7 +10,7 @@ struct DealRow: View {
     var leadingDateLabel: String? = nil
 
     @Environment(\.ddbxColors) private var colors
-    @Environment(AppSettings.self) private var settings
+    @EnvironmentObject private var settings: AppSettings
 
     // Lift-sort mode is indicated by leadingDateLabel being set.
     private var isLiftSort: Bool { leadingDateLabel != nil }

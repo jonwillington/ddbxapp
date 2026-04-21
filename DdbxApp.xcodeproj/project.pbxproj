@@ -15,6 +15,7 @@
 		1112979EE46F0B849C5A570A /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61579D09E71FE789265BA5FA /* DashboardView.swift */; };
 		15915F560B692067D1B7F42A /* NotificationsSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC118C950AA9BD1CC8A17DC6 /* NotificationsSheet.swift */; };
 		5A6BE4BDC225F7EA76BBB05F /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5342271C62350E0DCAB305A5 /* Models.swift */; };
+		6983EC3F683C79A50EB985D6 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 42FB658D8203E4F0516DD70F /* PrivacyInfo.xcprivacy */; };
 		6EECE5AD625A9AE27219E5F7 /* PositionCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6ED582D89E32662E7D5838C2 /* PositionCard.swift */; };
 		6EEFA0717A2D00327A8BB0ED /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EABE40FEF8220C4EF2C1F6CE /* ContentView.swift */; };
 		800B5BCA2255FE068B3BFA76 /* DashboardViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9C801EB5A95F55DD607B063 /* DashboardViewModel.swift */; };
@@ -43,6 +44,7 @@
 		1EB0CF1D5036B7D8CC3B568C /* DealRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DealRow.swift; sourceTree = "<group>"; };
 		25B6B5F817C0AB3E13FC3F78 /* NewsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewsView.swift; sourceTree = "<group>"; };
 		2E4C59BEAC2130A83CCAE5E0 /* MarketStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarketStatus.swift; sourceTree = "<group>"; };
+		42FB658D8203E4F0516DD70F /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		5342271C62350E0DCAB305A5 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
 		54767CE746AC9BBCAFD1D053 /* MiniPriceChart.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MiniPriceChart.swift; sourceTree = "<group>"; };
 		557118C7B96ABFCA7C329E65 /* DdbxApp.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = DdbxApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -106,6 +108,7 @@
 			isa = PBXGroup;
 			children = (
 				C41D3EA63793EE00F5AF655C /* Assets.xcassets */,
+				42FB658D8203E4F0516DD70F /* PrivacyInfo.xcprivacy */,
 			);
 			name = Resources;
 			path = Sources/DdbxApp/Resources;
@@ -190,6 +193,7 @@
 			files = (
 				0EE7DC080A91978A3E1831A4 /* Assets.xcassets in Resources */,
 				A94607882B5B614BF7E16B92 /* Fonts in Resources */,
+				6983EC3F683C79A50EB985D6 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -283,7 +287,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -302,13 +306,13 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = Sources/DdbxApp/DdbxApp.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				INFOPLIST_FILE = Sources/DdbxApp/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0.0;
+				MARKETING_VERSION = 1.0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = uk.ddbx.app;
 				PRODUCT_NAME = ddbx;
 				SDKROOT = iphoneos;
@@ -363,7 +367,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -381,13 +385,13 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = Sources/DdbxApp/DdbxApp.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				INFOPLIST_FILE = Sources/DdbxApp/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0.0;
+				MARKETING_VERSION = 1.0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = uk.ddbx.app;
 				PRODUCT_NAME = ddbx;
 				SDKROOT = iphoneos;
