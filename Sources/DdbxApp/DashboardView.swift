@@ -48,7 +48,7 @@ struct DashboardView: View {
                     LogoButton(showAbout: $showAbout)
                 }
                 ToolbarItem(placement: .topBarTrailing) {
-                    HStack(spacing: 4) {
+                    HStack(spacing: 16) {
                         Button { showNotifications = true } label: {
                             Image(systemName: "bell")
                                 .font(.system(size: 16, weight: .medium))

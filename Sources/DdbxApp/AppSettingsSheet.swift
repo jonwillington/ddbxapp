@@ -71,6 +71,7 @@ struct AppSettingsSheet: View {
                             .foregroundStyle(colors.muted)
                             .textCase(.uppercase)
                             .tracking(0.5)
+                            .padding(.top, 12)
                     } footer: {
                         Text("Used to compare deal performance against the broader market.")
                             .font(.instrument(size: 12))
@@ -108,6 +109,7 @@ struct AppSettingsSheet: View {
                             .foregroundStyle(colors.muted)
                             .textCase(.uppercase)
                             .tracking(0.5)
+                            .padding(.top, 12)
                     } footer: {
                         Text("Default: standouts only.")
                             .font(.instrument(size: 12))
@@ -132,6 +134,7 @@ struct AppSettingsSheet: View {
                             .foregroundStyle(colors.muted)
                             .textCase(.uppercase)
                             .tracking(0.5)
+                            .padding(.top, 12)
                     } footer: {
                         Text("A recap at market open and after close.")
                             .font(.instrument(size: 12))
