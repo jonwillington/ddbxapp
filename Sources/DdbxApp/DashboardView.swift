@@ -367,8 +367,9 @@ struct DashboardView: View {
         .padding(.vertical, 8)
     }
 
-    /// Contextual subtitle for the empty-today card.
-    /// Weekend → relax. Weekday before noon → pre-open. Weekday noon+ → day's done.
+    /// Contextual subtitle for the empty-today card. Anchored to LSE hours
+    /// (08:00–16:30 London). Weekend → relax. Pre-open → coffee. Market open →
+    /// waiting on disclosures. After close → day's done.
     static func noDealsSubtitle(now: Date = Date()) -> String {
         var cal = Calendar(identifier: .gregorian)
         cal.timeZone = TimeZone(identifier: "Europe/London") ?? .current
@@ -376,10 +377,14 @@ struct DashboardView: View {
         if weekday == 1 || weekday == 7 {
             return "Markets closed for the weekend. Get some sunlight."
         }
-        let hour = cal.component(.hour, from: now)
-        return hour < 12
-            ? "Pour your coffee, the market opens soon."
-            : "Check back tomorrow, get some sleep."
+        let minutes = cal.component(.hour, from: now) * 60 + cal.component(.minute, from: now)
+        if minutes < 8 * 60 {
+            return "Pour your coffee, the market opens soon."
+        }
+        if minutes < 16 * 60 + 30 {
+            return "Market's open. Waiting on the first disclosure."
+        }
+        return "Check back tomorrow, get some sleep."
     }
 
     // MARK: - Day section
