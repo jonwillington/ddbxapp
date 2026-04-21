@@ -31,7 +31,7 @@ enum NotifyLevel: String, Codable, Sendable, CaseIterable {
         switch self {
         case .off: return "No pushes."
         case .noteworthy: return "Significant & noteworthy trades."
-        case .all: return "Every analyzed trade."
+        case .all: return "Every disclosed buy."
         }
     }
 }
@@ -52,7 +52,7 @@ final class PushManager: NSObject, ObservableObject {
     private static let digestEnabledKey = "ddbx.digestEnabled"
 
     /// Per-device notification level. `.noteworthy` = significant+noteworthy only (default),
-    /// `.all` = every analyzed buy, `.off` = no deal pushes. Persisted and re-sent on change.
+    /// `.all` = every disclosed buy, `.off` = no deal pushes. Persisted and re-sent on change.
     @Published var notifyLevel: NotifyLevel {
         didSet {
             guard oldValue != notifyLevel else { return }
