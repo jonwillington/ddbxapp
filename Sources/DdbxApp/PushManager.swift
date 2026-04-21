@@ -14,9 +14,26 @@ struct PushNotificationRecord: Codable, Identifiable, Sendable {
 
 // MARK: - Push manager
 
-enum NotifyLevel: String, Codable, Sendable {
+enum NotifyLevel: String, Codable, Sendable, CaseIterable {
+    case off = "none"
     case noteworthy
     case all
+
+    var title: String {
+        switch self {
+        case .off: return "None"
+        case .noteworthy: return "Standouts only"
+        case .all: return "Every buy"
+        }
+    }
+
+    var subtitle: String {
+        switch self {
+        case .off: return "No pushes."
+        case .noteworthy: return "Significant & noteworthy trades."
+        case .all: return "Every analyzed trade."
+        }
+    }
 }
 
 @MainActor
@@ -32,13 +49,25 @@ final class PushManager: NSObject, ObservableObject {
     @Published private(set) var notificationHistory: [PushNotificationRecord] = []
 
     private static let notifyLevelKey = "ddbx.notifyLevel"
+    private static let digestEnabledKey = "ddbx.digestEnabled"
 
     /// Per-device notification level. `.noteworthy` = significant+noteworthy only (default),
-    /// `.all` = every analyzed buy. Persisted and re-sent on change.
+    /// `.all` = every analyzed buy, `.off` = no deal pushes. Persisted and re-sent on change.
     @Published var notifyLevel: NotifyLevel {
         didSet {
             guard oldValue != notifyLevel else { return }
             UserDefaults.standard.set(notifyLevel.rawValue, forKey: Self.notifyLevelKey)
+            if let token = deviceToken {
+                Task { await registerWithServer(token: token) }
+            }
+        }
+    }
+
+    /// Morning/close daily summary pushes. Default on.
+    @Published var digestEnabled: Bool {
+        didSet {
+            guard oldValue != digestEnabled else { return }
+            UserDefaults.standard.set(digestEnabled, forKey: Self.digestEnabledKey)
             if let token = deviceToken {
                 Task { await registerWithServer(token: token) }
             }
@@ -52,6 +81,8 @@ final class PushManager: NSObject, ObservableObject {
         } else {
             notifyLevel = .noteworthy
         }
+        // UserDefaults.bool returns false for unset keys — explicit default on first launch.
+        digestEnabled = UserDefaults.standard.object(forKey: Self.digestEnabledKey) as? Bool ?? true
         super.init()
         if let data = UserDefaults.standard.data(forKey: "ddbx.notificationHistory"),
            let records = try? JSONDecoder().decode([PushNotificationRecord].self, from: data) {
@@ -116,11 +147,12 @@ final class PushManager: NSObject, ObservableObject {
         let environment = "production"
         #endif
 
-        let body: [String: String] = [
+        let body: [String: Any] = [
             "token": token,
             "environment": environment,
             "timezone": TimeZone.current.identifier,
             "notify_level": notifyLevel.rawValue,
+            "digest_enabled": digestEnabled,
         ]
 
         do {

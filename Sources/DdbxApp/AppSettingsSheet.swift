@@ -7,10 +7,6 @@ struct AppSettingsSheet: View {
     @EnvironmentObject private var pushManager: PushManager
 
     var body: some View {
-        let notifyAllBinding = Binding<Bool>(
-            get: { pushManager.notifyLevel == .all },
-            set: { pushManager.notifyLevel = $0 ? .all : .noteworthy }
-        )
         NavigationStack {
             ZStack {
                 colors.background.ignoresSafeArea()
@@ -81,23 +77,63 @@ struct AppSettingsSheet: View {
                             .foregroundStyle(colors.muted)
                     }
 
-                    // MARK: - Notifications
+                    // MARK: - Deal notifications
                     Section {
-                        Toggle(isOn: notifyAllBinding) {
-                            Text("Notify on every buy")
+                        ForEach(NotifyLevel.allCases, id: \.self) { level in
+                            Button {
+                                pushManager.notifyLevel = level
+                            } label: {
+                                HStack {
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text(level.title)
+                                            .font(.instrument(size: 15))
+                                            .foregroundStyle(colors.foreground)
+                                        Text(level.subtitle)
+                                            .font(.instrument(size: 12))
+                                            .foregroundStyle(colors.muted)
+                                    }
+                                    Spacer()
+                                    if pushManager.notifyLevel == level {
+                                        Image(systemName: "checkmark")
+                                            .font(.system(size: 14, weight: .semibold))
+                                            .foregroundStyle(colors.accent)
+                                    }
+                                }
+                            }
+                            .listRowBackground(colors.surface)
+                        }
+                    } header: {
+                        Text("Deal Notifications")
+                            .font(.instrument(.semiBold, size: 12))
+                            .foregroundStyle(colors.muted)
+                            .textCase(.uppercase)
+                            .tracking(0.5)
+                    } footer: {
+                        Text("Default: standouts only.")
+                            .font(.instrument(size: 12))
+                            .foregroundStyle(colors.muted)
+                    }
+
+                    // MARK: - Daily summary
+                    Section {
+                        Toggle(isOn: Binding(
+                            get: { pushManager.digestEnabled },
+                            set: { pushManager.digestEnabled = $0 }
+                        )) {
+                            Text("Morning & close")
                                 .font(.instrument(size: 15))
                                 .foregroundStyle(colors.foreground)
                         }
                         .tint(colors.accent)
                         .listRowBackground(colors.surface)
                     } header: {
-                        Text("Notifications")
+                        Text("Daily Summary")
                             .font(.instrument(.semiBold, size: 12))
                             .foregroundStyle(colors.muted)
                             .textCase(.uppercase)
                             .tracking(0.5)
                     } footer: {
-                        Text("Off: only significant & noteworthy trades. On: every analyzed buy.")
+                        Text("A recap at market open and after close.")
                             .font(.instrument(size: 12))
                             .foregroundStyle(colors.muted)
                     }
