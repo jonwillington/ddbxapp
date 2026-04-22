@@ -70,6 +70,35 @@ actor APIClient {
         return response.price
     }
 
+    // MARK: - FX (ECB daily rates via Frankfurter)
+
+    /// Daily GBP-per-USD rates for the last `days`. ECB only publishes on
+    /// business days, so callers should treat the series as sparse and
+    /// use the last rate on or before a given date.
+    func gbpPerUsdHistory(days: Int = 730) async throws -> [FxRate] {
+        let end = Date()
+        guard let start = Calendar.current.date(byAdding: .day, value: -max(days, 1), to: end) else {
+            return []
+        }
+        let f = DateFormatter()
+        f.dateFormat = "yyyy-MM-dd"
+        f.timeZone = TimeZone(identifier: "UTC")
+        let startStr = f.string(from: start)
+        let endStr = f.string(from: end)
+        guard let url = URL(string: "https://api.frankfurter.dev/v1/\(startStr)..\(endStr)?base=USD&symbols=GBP") else {
+            return []
+        }
+        let (data, response) = try await session.data(from: url)
+        guard let http = response as? HTTPURLResponse, (200...299).contains(http.statusCode) else {
+            throw APIError.badStatus((response as? HTTPURLResponse)?.statusCode ?? -1)
+        }
+        let decoded = try decoder.decode(FxTimeseries.self, from: data)
+        return decoded.rates.compactMap { (date, m) in
+            guard let r = m["GBP"] else { return nil }
+            return FxRate(date: date, gbpPerUsd: r)
+        }.sorted { $0.date < $1.date }
+    }
+
     // MARK: - Private
 
     private func fetch<T: Decodable>(_ url: URL) async throws -> T {

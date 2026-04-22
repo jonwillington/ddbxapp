@@ -56,6 +56,15 @@ enum MarketBenchmark: String, CaseIterable, Codable {
         case .msciWorld:    "URTH"
         }
     }
+
+    /// GBP-denominated benchmarks. USD indices (S&P, MSCI) will mislead
+    /// on alpha until an FX-conversion endpoint lands on the backend.
+    var isGbp: Bool {
+        switch self {
+        case .ftseAllShare, .ftse100: true
+        case .sp500, .msciWorld:      false
+        }
+    }
 }
 
 // MARK: - Row metric enum

@@ -262,3 +262,15 @@ struct PriceHistoryResponse: Codable, Sendable {
 struct PriceOnResponse: Codable, Sendable {
     let price: Double?
 }
+
+// MARK: - FX
+
+struct FxRate: Sendable, Equatable {
+    let date: String       // yyyy-MM-dd
+    let gbpPerUsd: Double
+}
+
+struct FxTimeseries: Codable, Sendable {
+    /// Frankfurter shape: { "rates": { "2026-04-21": { "GBP": 0.74 } } }
+    let rates: [String: [String: Double]]
+}

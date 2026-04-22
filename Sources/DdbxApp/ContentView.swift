@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct ContentView: View {
-    enum TabSelection: Hashable { case dashboard, news, search }
+    enum TabSelection: Hashable { case dashboard, performance, news, search }
 
     @EnvironmentObject private var settings: AppSettings
     @Environment(\.colorScheme) private var colorScheme
@@ -25,6 +25,9 @@ struct ContentView: View {
                 Tab("Dashboard", systemImage: "chart.bar.fill", value: .dashboard) {
                     DashboardView()
                 }
+                Tab("Performance", systemImage: "chart.xyaxis.line", value: .performance) {
+                    PerformanceView()
+                }
                 Tab("News", systemImage: "newspaper.fill", value: .news) {
                     NewsView()
                 }
@@ -37,6 +40,9 @@ struct ContentView: View {
                 DashboardView()
                     .tabItem { Label("Dashboard", systemImage: "chart.bar.fill") }
                     .tag(TabSelection.dashboard)
+                PerformanceView()
+                    .tabItem { Label("Performance", systemImage: "chart.xyaxis.line") }
+                    .tag(TabSelection.performance)
                 NewsView()
                     .tabItem { Label("News", systemImage: "newspaper.fill") }
                     .tag(TabSelection.news)

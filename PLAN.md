@@ -11,7 +11,7 @@ Context: reinterpret [dd-site](https://github.com/) (Director Dealings web app) 
 | Endpoint | Purpose |
 |----------|---------|
 | `GET /api/dealings` | List of `Dealing` rows (`worker/db/types.ts`: `trade_date`, `disclosed_date`, director, `ticker`, `company`, `tx_type`, `value_gbp`, optional `triage`, optional `analysis` with `rating`, `summary`, etc.). |
-| `GET /api/version` | `{ latest, total }` from DB. Dashboard polls every **30s** and refetches when fingerprint `latest:total` changes (`use-data-version.ts`). |
+| `GET /api/version` | `{ latest, totyehal }` from DB. Dashboard polls every **30s** and refetches when fingerprint `latest:total` changes (`use-data-version.ts`). |
 | `GET /api/prices/latest?tickers=…` | Latest prices for tickers + `^FTAS`. |
 | `GET /api/prices/history?ticker=^FTAS&days=365` | FTSE history for “performance vs FTSE” hero. |
 | `GET /api/news/uk` | UK headlines strip (trading days). Optional for a “pure trades” v1. |
@@ -80,13 +80,10 @@ Context: reinterpret [dd-site](https://github.com/) (Director Dealings web app) 
 - Notification taps: `PushManager` implements `UNUserNotificationCenterDelegate`; tapping a deal notification opens the detail sheet (fetches from API if not in local cache).
 - Foreground display: banners shown even when app is open.
 
-### Phase 5 — Polish ✅
+### Phase 5 — Polish
 
-- `BackgroundRefresh.swift` — `BGAppRefreshTask` polls `/api/version` every ~30 min in background; posts local notification if new dealings detected (fallback when push isn't set up yet).
-- `BGTaskSchedulerPermittedIdentifiers` in Info.plist (`uk.ddbx.app.refresh`).
-- Schedules next refresh when app enters background.
-- **Dynamic Type:** All `Font.instrument()` calls now use `relativeTo:` — text scales with the user's preferred content size.
-- **VoiceOver:** `DealRow` combines children into a single accessible element with a descriptive label (ticker, company, director, buy/sell, value, rating).
+- `BGAppRefreshTask` to poll `version` occasionally (does not replace push for real-time alerts).
+- Accessibility: Dynamic Type, VoiceOver on rows.
 
 ### Out of scope (for now)
 
