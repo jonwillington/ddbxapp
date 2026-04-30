@@ -3,8 +3,18 @@ import SwiftUI
 struct AppSettingsSheet: View {
     @Environment(\.ddbxColors) private var colors
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.openURL) private var openURL
     @EnvironmentObject private var settings: AppSettings
     @EnvironmentObject private var pushManager: PushManager
+    @EnvironmentObject private var sub: SubscriptionManager
+    @State private var showPaywall = false
+
+    private static var versionString: String {
+        let info = Bundle.main.infoDictionary
+        let version = info?["CFBundleShortVersionString"] as? String ?? "–"
+        let build = info?["CFBundleVersion"] as? String ?? "–"
+        return "Version \(version) (\(build))"
+    }
 
     var body: some View {
         NavigationStack {
@@ -12,6 +22,50 @@ struct AppSettingsSheet: View {
                 colors.background.ignoresSafeArea()
 
                 List {
+                    // MARK: - Subscription
+                    Section {
+                        if sub.isSubscribed {
+                            HStack {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("DDBX Premium")
+                                        .font(.instrument(.semiBold, size: 15))
+                                        .foregroundStyle(colors.foreground)
+                                    Text("Active")
+                                        .font(.instrument(size: 12))
+                                        .foregroundStyle(Color.buyGreen)
+                                }
+                                Spacer()
+                                Button("Manage") {
+                                    openURL(URL(string: "https://apps.apple.com/account/subscriptions")!)
+                                }
+                                .font(.instrument(size: 14))
+                                .foregroundStyle(colors.accent)
+                            }
+                            .listRowBackground(colors.surface)
+                        } else {
+                            Button {
+                                showPaywall = true
+                            } label: {
+                                HStack {
+                                    Text("Subscribe to DDBX")
+                                        .font(.instrument(size: 15))
+                                        .foregroundStyle(colors.foreground)
+                                    Spacer()
+                                    Image(systemName: "chevron.right")
+                                        .font(.system(size: 12))
+                                        .foregroundStyle(colors.muted)
+                                }
+                            }
+                            .listRowBackground(colors.surface)
+                        }
+                    } header: {
+                        Text("Subscription")
+                            .font(.instrument(.semiBold, size: 12))
+                            .foregroundStyle(colors.muted)
+                            .textCase(.uppercase)
+                            .tracking(0.5)
+                    }
+
                     // MARK: - Appearance
                     Section {
                         ForEach(Appearance.allCases, id: \.self) { option in
@@ -140,6 +194,19 @@ struct AppSettingsSheet: View {
                             .font(.instrument(size: 12))
                             .foregroundStyle(colors.muted)
                     }
+
+                    // MARK: - Version
+                    Section {
+                        HStack {
+                            Spacer()
+                            Text(Self.versionString)
+                                .font(.instrument(size: 12))
+                                .foregroundStyle(colors.muted)
+                            Spacer()
+                        }
+                        .listRowBackground(Color.clear)
+                        .listRowSeparator(.hidden)
+                    }
                 }
                 .listStyle(.insetGrouped)
                 .scrollContentBackground(.hidden)
@@ -159,5 +226,9 @@ struct AppSettingsSheet: View {
         .presentationDetents([.medium, .large])
         .ddbxPresentationBackground(colors.background)
         .presentationDragIndicator(.visible)
+        .sheet(isPresented: $showPaywall) {
+            PaywallView(showsClose: true)
+                .environmentObject(sub)
+        }
     }
 }

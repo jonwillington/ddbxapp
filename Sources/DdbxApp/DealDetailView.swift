@@ -13,8 +13,63 @@ struct DealDetailView: View {
 
     var body: some View {
         NavigationStack {
+            scrollContent
+                .background(colors.background)
+                .navigationTitle(deal.ticker.replacingOccurrences(of: ".L", with: ""))
+                .navigationBarTitleDisplayMode(.inline)
+                // Pin the nav bar opaque. Without this, iOS auto-flips
+                // translucency based on scroll position; when async data swaps
+                // the layout, the resulting safe-area recompute feeds back
+                // into the ScrollView and produces visible "scrubbing".
+                .toolbarBackground(colors.background, for: .navigationBar)
+                .toolbarBackground(.visible, for: .navigationBar)
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button("Done") { dismiss() }
+                            .font(.instrument(.medium, size: 16))
+                            .foregroundStyle(colors.accent)
+                    }
+                }
+        }
+        // Lock sheet gestures to scrolling so the .large detent doesn't
+        // race the ScrollView for ownership while content height settles.
+        .modifier(LockSheetScrollInteractionModifier())
+        .task { await fetchPriceData() }
+        .sheet(item: $selectedURL) { url in
+            SafariView(url: url)
+                .ignoresSafeArea()
+        }
+    }
+
+    /// Pinning the scroll anchor to `.top` (iOS 17+) keeps the ScrollView from
+    /// auto-rebounding when async price data fills in and the content height
+    /// changes. `.scrollBounceBehavior(.basedOnSize)` (iOS 16.4+) prevents
+    /// rubber-banding while the skeleton content is still shorter than the
+    /// viewport, which on a physical iPhone manifested as the sheet content
+    /// "scrubbing" up and down before settling.
+    @ViewBuilder
+    private var scrollContent: some View {
+        if #available(iOS 17.0, *) {
             ScrollView {
-                VStack(alignment: .leading, spacing: 20) {
+                detailContent
+            }
+            .defaultScrollAnchor(.top)
+            .scrollIndicators(.hidden)
+            .scrollBounceBehavior(.basedOnSize)
+        } else if #available(iOS 16.4, *) {
+            ScrollView {
+                detailContent
+            }
+            .scrollBounceBehavior(.basedOnSize)
+        } else {
+            ScrollView {
+                detailContent
+            }
+        }
+    }
+
+    private var detailContent: some View {
+        VStack(alignment: .leading, spacing: 20) {
                     headerSection
                     keyMetricsGrid
 
@@ -61,25 +116,8 @@ struct DealDetailView: View {
                         performanceSection(performance)
                     }
                     dealFieldsSection
-                }
-                .padding()
-            }
-            .background(colors.background)
-            .navigationTitle(deal.ticker.replacingOccurrences(of: ".L", with: ""))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Done") { dismiss() }
-                        .font(.instrument(.medium, size: 16))
-                        .foregroundStyle(colors.accent)
-                }
-            }
         }
-        .task { await fetchPriceData() }
-        .sheet(item: $selectedURL) { url in
-            SafariView(url: url)
-                .ignoresSafeArea()
-        }
+        .padding()
     }
 
     // MARK: - Header
@@ -567,6 +605,22 @@ struct DealDetailView: View {
             ftseReturnPct = (ftseCurrent - ftseEntry) / ftseEntry
         } catch {
             // Silently fail
+        }
+    }
+}
+
+/// Tells the sheet that vertical drags inside the content always belong to
+/// the ScrollView, never to the sheet's resize/dismiss gesture. With only a
+/// `.large` detent, the default `.automatic` heuristic still arbitrates
+/// gestures during content-size transitions and can micro-shift the sheet —
+/// `.scrolls` removes that ambiguity. iOS 16.4+; older versions fall back to
+/// the default behavior.
+private struct LockSheetScrollInteractionModifier: ViewModifier {
+    func body(content: Content) -> some View {
+        if #available(iOS 16.4, *) {
+            content.presentationContentInteraction(.scrolls)
+        } else {
+            content
         }
     }
 }

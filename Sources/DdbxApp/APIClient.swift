@@ -19,7 +19,7 @@ actor APIClient {
     func dealings() async throws -> [Dealing] {
         let url = baseURL.appendingPathComponent("dealings")
         let response: DealingsResponse = try await fetch(url)
-        return response.dealings
+        return response.dealings.filter { $0.valueGbp > 0 && $0.pricePence > 0 }
     }
 
     func dealing(id: String) async throws -> Dealing {

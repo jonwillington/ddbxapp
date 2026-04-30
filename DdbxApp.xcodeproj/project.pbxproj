@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		01F74F060343ED06A7D71ABE /* SearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CDFD0C53A58F2F9F1BE55D7 /* SearchView.swift */; };
 		03C32BAD64A7F9B34779A9F6 /* APIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07BD1F5233D23EBB260E88C3 /* APIClient.swift */; };
+		0421311B99CFECB71636B161 /* PerformanceMetricSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 333D6A817D23764E09073CFF /* PerformanceMetricSheet.swift */; };
 		093836AFA97A4F2785AAD9F5 /* NewsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25B6B5F817C0AB3E13FC3F78 /* NewsView.swift */; };
 		0AA8817663D38540ADDD3B86 /* MetricsSettingsSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = E58C244F838EFBC47F1DCBBD /* MetricsSettingsSheet.swift */; };
 		0EE7DC080A91978A3E1831A4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C41D3EA63793EE00F5AF655C /* Assets.xcassets */; };
@@ -17,8 +18,10 @@
 		15915F560B692067D1B7F42A /* NotificationsSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC118C950AA9BD1CC8A17DC6 /* NotificationsSheet.swift */; };
 		2841F077EC552BFA3C5876E9 /* PerformanceModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C3DEE4736B3243337CF552C /* PerformanceModels.swift */; };
 		2C405F79081A27EC9056B9B1 /* PerformanceCriteriaSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BF480CB018A6DDA2D6D6C6E /* PerformanceCriteriaSheet.swift */; };
+		3A13D67FE4DE3FA5195B2FA0 /* LoadFailure.swift in Sources */ = {isa = PBXBuildFile; fileRef = B71BB93D2F392BAA080EB25A /* LoadFailure.swift */; };
 		590073C1DCA34EB3F4ABB197 /* PerformanceChart.swift in Sources */ = {isa = PBXBuildFile; fileRef = C37B3A51E924EFA9309A5FEC /* PerformanceChart.swift */; };
 		5A6BE4BDC225F7EA76BBB05F /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5342271C62350E0DCAB305A5 /* Models.swift */; };
+		5DB3BB179FA4C123D5D98564 /* PaywallView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 022DF074B9EA3B652CF5F474 /* PaywallView.swift */; };
 		6983EC3F683C79A50EB985D6 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 42FB658D8203E4F0516DD70F /* PrivacyInfo.xcprivacy */; };
 		6EECE5AD625A9AE27219E5F7 /* PositionCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6ED582D89E32662E7D5838C2 /* PositionCard.swift */; };
 		6EEFA0717A2D00327A8BB0ED /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EABE40FEF8220C4EF2C1F6CE /* ContentView.swift */; };
@@ -32,6 +35,7 @@
 		A95BC97E44E77563221B733A /* BackgroundRefresh.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C2F504BBB8A77C170055022 /* BackgroundRefresh.swift */; };
 		D9A2F447A6E8ED7F9B8A33A3 /* DealRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1EB0CF1D5036B7D8CC3B568C /* DealRow.swift */; };
 		E72B103A7F665055318F49A6 /* MiniPriceChart.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54767CE746AC9BBCAFD1D053 /* MiniPriceChart.swift */; };
+		E9EF822690398677B39082BB /* SubscriptionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FA45B50A6CF4AF818E5E736 /* SubscriptionManager.swift */; };
 		ED75F59F90EB076EB75804CF /* SkeletonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B175C652774542C757ED8A37 /* SkeletonView.swift */; };
 		EE3D42CB4BA812BA4B68D2BB /* AppSettingsSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C1E457D589930FA268C0BDD /* AppSettingsSheet.swift */; };
 		F4F4E6B12FBECDD7A8A8ED96 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97CB8A29F92991097F25F084 /* AppDelegate.swift */; };
@@ -39,17 +43,22 @@
 		F72CAA21AA2875EAFA13255C /* MarketStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E4C59BEAC2130A83CCAE5E0 /* MarketStatus.swift */; };
 		F9D45E2715EDFF73CDDC4222 /* PerformanceViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15CB86354BFEF6E85FE7F43E /* PerformanceViewModel.swift */; };
 		FA42BD62DAC9CE45652752BA /* Typography.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FA6F721C0B0BBCEAB2FB5D7 /* Typography.swift */; };
+		FEC1C28BD83D875843C33C74 /* NotificationOnboardingSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14BCFD3B650B730B15D33846 /* NotificationOnboardingSheet.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		01C769F1F8FFAA6EE01E4FD2 /* PushManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PushManager.swift; sourceTree = "<group>"; };
+		022DF074B9EA3B652CF5F474 /* PaywallView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallView.swift; sourceTree = "<group>"; };
 		03C3A27B8DC04BA340371EB8 /* DdbxApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DdbxApp.swift; sourceTree = "<group>"; };
 		07BD1F5233D23EBB260E88C3 /* APIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIClient.swift; sourceTree = "<group>"; };
+		14BCFD3B650B730B15D33846 /* NotificationOnboardingSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationOnboardingSheet.swift; sourceTree = "<group>"; };
 		15CB86354BFEF6E85FE7F43E /* PerformanceViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PerformanceViewModel.swift; sourceTree = "<group>"; };
 		1CDFD0C53A58F2F9F1BE55D7 /* SearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchView.swift; sourceTree = "<group>"; };
 		1EB0CF1D5036B7D8CC3B568C /* DealRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DealRow.swift; sourceTree = "<group>"; };
 		25B6B5F817C0AB3E13FC3F78 /* NewsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewsView.swift; sourceTree = "<group>"; };
 		2E4C59BEAC2130A83CCAE5E0 /* MarketStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarketStatus.swift; sourceTree = "<group>"; };
+		2FA45B50A6CF4AF818E5E736 /* SubscriptionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionManager.swift; sourceTree = "<group>"; };
+		333D6A817D23764E09073CFF /* PerformanceMetricSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PerformanceMetricSheet.swift; sourceTree = "<group>"; };
 		42FB658D8203E4F0516DD70F /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		4BF480CB018A6DDA2D6D6C6E /* PerformanceCriteriaSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PerformanceCriteriaSheet.swift; sourceTree = "<group>"; };
 		4C3DEE4736B3243337CF552C /* PerformanceModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PerformanceModels.swift; sourceTree = "<group>"; };
@@ -69,6 +78,7 @@
 		AEBAB456D9D66F711A25C8A5 /* Fonts */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Fonts; path = Sources/DdbxApp/Resources/Fonts; sourceTree = SOURCE_ROOT; };
 		B098096651A86202D4EBE211 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		B175C652774542C757ED8A37 /* SkeletonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SkeletonView.swift; sourceTree = "<group>"; };
+		B71BB93D2F392BAA080EB25A /* LoadFailure.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadFailure.swift; sourceTree = "<group>"; };
 		C37B3A51E924EFA9309A5FEC /* PerformanceChart.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PerformanceChart.swift; sourceTree = "<group>"; };
 		C41D3EA63793EE00F5AF655C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		CBD693B4B04993938D2D2D4E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
@@ -96,15 +106,19 @@
 				79C2CF43EB19C19722771C5E /* DealDetailView.swift */,
 				1EB0CF1D5036B7D8CC3B568C /* DealRow.swift */,
 				CBD693B4B04993938D2D2D4E /* Info.plist */,
+				B71BB93D2F392BAA080EB25A /* LoadFailure.swift */,
 				2E4C59BEAC2130A83CCAE5E0 /* MarketStatus.swift */,
 				FCB86F7E8E8A3FF57F1209D2 /* MarketStatusBanner.swift */,
 				E58C244F838EFBC47F1DCBBD /* MetricsSettingsSheet.swift */,
 				54767CE746AC9BBCAFD1D053 /* MiniPriceChart.swift */,
 				5342271C62350E0DCAB305A5 /* Models.swift */,
 				25B6B5F817C0AB3E13FC3F78 /* NewsView.swift */,
+				14BCFD3B650B730B15D33846 /* NotificationOnboardingSheet.swift */,
 				FC118C950AA9BD1CC8A17DC6 /* NotificationsSheet.swift */,
+				022DF074B9EA3B652CF5F474 /* PaywallView.swift */,
 				C37B3A51E924EFA9309A5FEC /* PerformanceChart.swift */,
 				4BF480CB018A6DDA2D6D6C6E /* PerformanceCriteriaSheet.swift */,
+				333D6A817D23764E09073CFF /* PerformanceMetricSheet.swift */,
 				4C3DEE4736B3243337CF552C /* PerformanceModels.swift */,
 				A9FB40651F7798A793F8D60D /* PerformanceView.swift */,
 				15CB86354BFEF6E85FE7F43E /* PerformanceViewModel.swift */,
@@ -112,6 +126,7 @@
 				01C769F1F8FFAA6EE01E4FD2 /* PushManager.swift */,
 				1CDFD0C53A58F2F9F1BE55D7 /* SearchView.swift */,
 				B175C652774542C757ED8A37 /* SkeletonView.swift */,
+				2FA45B50A6CF4AF818E5E736 /* SubscriptionManager.swift */,
 				B098096651A86202D4EBE211 /* Theme.swift */,
 				6FA6F721C0B0BBCEAB2FB5D7 /* Typography.swift */,
 			);
@@ -230,15 +245,19 @@
 				81F4102E2F069C6A293F54B8 /* DdbxApp.swift in Sources */,
 				93D5FBA96131DA396DF5B4BA /* DealDetailView.swift in Sources */,
 				D9A2F447A6E8ED7F9B8A33A3 /* DealRow.swift in Sources */,
+				3A13D67FE4DE3FA5195B2FA0 /* LoadFailure.swift in Sources */,
 				F72CAA21AA2875EAFA13255C /* MarketStatus.swift in Sources */,
 				910C0380FF8B9406237F5D1C /* MarketStatusBanner.swift in Sources */,
 				0AA8817663D38540ADDD3B86 /* MetricsSettingsSheet.swift in Sources */,
 				E72B103A7F665055318F49A6 /* MiniPriceChart.swift in Sources */,
 				5A6BE4BDC225F7EA76BBB05F /* Models.swift in Sources */,
 				093836AFA97A4F2785AAD9F5 /* NewsView.swift in Sources */,
+				FEC1C28BD83D875843C33C74 /* NotificationOnboardingSheet.swift in Sources */,
 				15915F560B692067D1B7F42A /* NotificationsSheet.swift in Sources */,
+				5DB3BB179FA4C123D5D98564 /* PaywallView.swift in Sources */,
 				590073C1DCA34EB3F4ABB197 /* PerformanceChart.swift in Sources */,
 				2C405F79081A27EC9056B9B1 /* PerformanceCriteriaSheet.swift in Sources */,
+				0421311B99CFECB71636B161 /* PerformanceMetricSheet.swift in Sources */,
 				2841F077EC552BFA3C5876E9 /* PerformanceModels.swift in Sources */,
 				0FCA752BE10C5685C902D17E /* PerformanceView.swift in Sources */,
 				F9D45E2715EDFF73CDDC4222 /* PerformanceViewModel.swift in Sources */,
@@ -246,6 +265,7 @@
 				F6FD93F47891A70FF6E834F9 /* PushManager.swift in Sources */,
 				01F74F060343ED06A7D71ABE /* SearchView.swift in Sources */,
 				ED75F59F90EB076EB75804CF /* SkeletonView.swift in Sources */,
+				E9EF822690398677B39082BB /* SubscriptionManager.swift in Sources */,
 				9FAD3C82789A490736C57844 /* Theme.swift in Sources */,
 				FA42BD62DAC9CE45652752BA /* Typography.swift in Sources */,
 			);
@@ -326,13 +346,13 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = Sources/DdbxApp/DdbxApp.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 10;
 				INFOPLIST_FILE = Sources/DdbxApp/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0.2;
+				MARKETING_VERSION = 1.0.7;
 				PRODUCT_BUNDLE_IDENTIFIER = uk.ddbx.app;
 				PRODUCT_NAME = ddbx;
 				SDKROOT = iphoneos;
@@ -405,13 +425,13 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = Sources/DdbxApp/DdbxApp.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 10;
 				INFOPLIST_FILE = Sources/DdbxApp/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0.2;
+				MARKETING_VERSION = 1.0.7;
 				PRODUCT_BUNDLE_IDENTIFIER = uk.ddbx.app;
 				PRODUCT_NAME = ddbx;
 				SDKROOT = iphoneos;

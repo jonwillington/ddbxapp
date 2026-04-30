@@ -34,6 +34,10 @@ targets:
         CFBundleDisplayName: ddbx
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        # Pre-answers App Store Connect's export-compliance question so
+        # uploads don't sit in "Missing Compliance" before TestFlight.
+        # We only use HTTPS (URLSession) and StoreKit, both Apple-exempt.
+        ITSAppUsesNonExemptEncryption: false
         LSRequiresIPhoneOS: true
         UIAppFonts:
           - Fonts/InstrumentSans-Regular.ttf
@@ -56,6 +60,9 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: uk.ddbx.app
         PRODUCT_NAME: ddbx
         TARGETED_DEVICE_FAMILY: "1"
-        MARKETING_VERSION: "1.0.2"
-        CURRENT_PROJECT_VERSION: 4
+        MARKETING_VERSION: "1.0.7"
+        CURRENT_PROJECT_VERSION: 10
         CODE_SIGN_ENTITLEMENTS: Sources/DdbxApp/DdbxApp.entitlements
+    scheme:
+      testTargets: []
+      storeKitConfiguration: Subscriptions.storekit

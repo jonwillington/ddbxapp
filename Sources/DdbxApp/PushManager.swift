@@ -50,6 +50,26 @@ final class PushManager: NSObject, ObservableObject {
 
     private static let notifyLevelKey = "ddbx.notifyLevel"
     private static let digestEnabledKey = "ddbx.digestEnabled"
+    private static let deviceIdKey = "ddbx.deviceId"
+
+    /// Stable per-install device identifier, sent alongside the APNs token so
+    /// the backend can dedupe by device rather than by token. Without this,
+    /// flipping between DEBUG (sandbox token) and TestFlight (production
+    /// token) builds leaves orphan rows on the server because each environment
+    /// gets a different APNs token for the same physical device.
+    ///
+    /// IDFV is the OS-blessed identifier; it persists across launches and
+    /// token rotations and only resets on full uninstall. We cache it in
+    /// UserDefaults to cover the rare case where IDFV is briefly nil right
+    /// after install, which would otherwise change our identifier mid-session.
+    private static func resolveDeviceId() -> String {
+        if let cached = UserDefaults.standard.string(forKey: Self.deviceIdKey) {
+            return cached
+        }
+        let id = UIDevice.current.identifierForVendor?.uuidString ?? UUID().uuidString
+        UserDefaults.standard.set(id, forKey: Self.deviceIdKey)
+        return id
+    }
 
     /// Per-device notification level. `.noteworthy` = significant+noteworthy only (default),
     /// `.all` = every disclosed buy, `.off` = no deal pushes. Persisted and re-sent on change.
@@ -91,6 +111,7 @@ final class PushManager: NSObject, ObservableObject {
     }
 
     private func recordRaw(id: String, title: String, body: String, dealingId: String?) {
+        guard !notificationHistory.contains(where: { $0.id == id }) else { return }
         let rec = PushNotificationRecord(
             id: id,
             title: title,
@@ -119,6 +140,15 @@ final class PushManager: NSObject, ObservableObject {
         } catch {
             print("[push] permission error: \(error)")
         }
+    }
+
+    /// Returns the live OS authorization status. Lets callers branch on
+    /// `.notDetermined` (haven't asked yet — show the onboarding sheet) vs
+    /// `.denied` / `.authorized` / `.provisional` without depending on the
+    /// cached `permissionGranted` boolean, which only reflects the last
+    /// in-app request.
+    func currentAuthorizationStatus() async -> UNAuthorizationStatus {
+        await UNUserNotificationCenter.current().notificationSettings().authorizationStatus
     }
 
     func didRegisterForRemoteNotifications(token: Data) {
@@ -150,6 +180,7 @@ final class PushManager: NSObject, ObservableObject {
         let body: [String: Any] = [
             "token": token,
             "environment": environment,
+            "device_id": Self.resolveDeviceId(),
             "timezone": TimeZone.current.identifier,
             "notify_level": notifyLevel.rawValue,
             "digest_enabled": digestEnabled,
@@ -169,7 +200,7 @@ final class PushManager: NSObject, ObservableObject {
 
 // MARK: - UNUserNotificationCenterDelegate
 
-extension PushManager: @preconcurrency UNUserNotificationCenterDelegate {
+extension PushManager: UNUserNotificationCenterDelegate {
     /// Show notifications even when the app is in the foreground
     nonisolated func userNotificationCenter(
         _ center: UNUserNotificationCenter,
@@ -183,17 +214,23 @@ extension PushManager: @preconcurrency UNUserNotificationCenterDelegate {
         return [.banner, .sound, .badge]
     }
 
-    /// Handle notification taps — route to the relevant dealing
+    /// Handle notification taps — route to the relevant dealing AND record into
+    /// history. didReceive fires for taps regardless of foreground/background, so
+    /// this is how digest pushes (which typically arrive while backgrounded) end
+    /// up in `notificationHistory`. recordRaw de-dupes by id.
     nonisolated func userNotificationCenter(
         _ center: UNUserNotificationCenter,
         didReceive response: UNNotificationResponse
     ) async {
-        let userInfo = response.notification.request.content.userInfo
+        let request = response.notification.request
+        let id = request.identifier
+        let title = request.content.title
+        let body = request.content.body
+        let dealingId = request.content.userInfo["dealing_id"] as? String
 
-        if let dealingId = userInfo["dealing_id"] as? String {
-            await MainActor.run {
-                self.pendingDealingId = dealingId
-            }
+        await MainActor.run {
+            self.recordRaw(id: id, title: title, body: body, dealingId: dealingId)
+            if let dealingId { self.pendingDealingId = dealingId }
         }
     }
 }

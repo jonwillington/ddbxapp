@@ -8,13 +8,14 @@ struct ShimmerModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
             .opacity(opacity)
-            .onAppear {
-                withAnimation(
-                    .easeInOut(duration: 1.0).repeatForever(autoreverses: true)
-                ) {
-                    opacity = 1.0
-                }
-            }
+            // Scoped via .animation(_:value:) so the repeatForever transaction
+            // doesn't leak into sibling state mutations (e.g. priceDataReady)
+            // and implicitly animate layout changes that should be instant.
+            .animation(
+                .easeInOut(duration: 1.0).repeatForever(autoreverses: true),
+                value: opacity
+            )
+            .onAppear { opacity = 1.0 }
     }
 }
 

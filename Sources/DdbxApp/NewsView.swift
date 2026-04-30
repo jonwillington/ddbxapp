@@ -5,7 +5,7 @@ struct NewsView: View {
     @Environment(\.ddbxColors) private var colors
     @State private var news: [UkNewsItem] = []
     @State private var isLoading = false
-    @State private var error: String?
+    @State private var failure: LoadFailure?
     @State private var selectedURL: URL?
     @State private var showAbout = false
     @State private var selectedSource: String? = nil
@@ -17,8 +17,10 @@ struct NewsView: View {
 
                 if isLoading && news.isEmpty {
                     SkeletonNews()
-                } else if let error, news.isEmpty {
-                    errorState(error)
+                } else if let failure, news.isEmpty {
+                    LoadFailureView(failure: failure) {
+                        Task { await loadNews() }
+                    }
                 } else {
                     newsList
                 }
@@ -33,7 +35,7 @@ struct NewsView: View {
                 }
             }
             .sheet(isPresented: $showAbout) {
-                AboutSheet()
+                PaywallView(showsClose: true)
             }
             .refreshable { await loadNews() }
         }
@@ -181,26 +183,6 @@ struct NewsView: View {
         .buttonStyle(.plain)
     }
 
-    // MARK: - Error
-
-    private func errorState(_ message: String) -> some View {
-        VStack(spacing: 12) {
-            Image(systemName: "newspaper")
-                .font(.title)
-                .foregroundStyle(colors.muted)
-            Text(message)
-                .font(.instrument(size: 15))
-                .foregroundStyle(colors.muted)
-                .multilineTextAlignment(.center)
-            Button("Retry") {
-                Task { await loadNews() }
-            }
-            .font(.instrument(.semiBold, size: 15))
-            .foregroundStyle(colors.accent)
-        }
-        .padding()
-    }
-
     // MARK: - Grouping
 
     private struct NewsGroup {
@@ -266,12 +248,12 @@ struct NewsView: View {
 
     private func loadNews() async {
         isLoading = true
-        error = nil
+        failure = nil
         do {
             let response = try await APIClient.shared.ukNews()
             news = response.items
         } catch {
-            self.error = error.localizedDescription
+            self.failure = LoadFailure.from(error)
         }
         isLoading = false
     }

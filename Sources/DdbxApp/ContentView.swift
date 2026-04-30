@@ -3,16 +3,46 @@ import SwiftUI
 struct ContentView: View {
     enum TabSelection: Hashable { case dashboard, performance, news, search }
 
+    private static let notifOnboardingShownKey = "ddbx.notifOnboardingShown"
+
     @EnvironmentObject private var settings: AppSettings
+    @EnvironmentObject private var vm: DashboardViewModel
+    @EnvironmentObject private var sub: SubscriptionManager
+    @EnvironmentObject private var pushManager: PushManager
     @Environment(\.colorScheme) private var colorScheme
-    @StateObject private var vm = DashboardViewModel()
     @State private var selection: TabSelection = .dashboard
+    @State private var showNotificationOnboarding = false
 
     var body: some View {
         tabs
             .tint(.accentBrown)
             .environment(\.ddbxColors, DdbxColors(colorScheme: colorScheme))
             .environmentObject(vm)
+            .task {
+                await maybeShowNotificationOnboarding()
+            }
+            .sheet(isPresented: $showNotificationOnboarding) {
+                NotificationOnboardingSheet()
+                    .environmentObject(pushManager)
+            }
+    }
+
+    /// Fires once per fresh subscription: if the user just purchased and the
+    /// OS hasn't recorded a notification decision yet, show the onboarding
+    /// sheet. The UserDefaults flag guards against re-showing on relaunch
+    /// even if the user dismisses with X.
+    private func maybeShowNotificationOnboarding() async {
+        guard sub.justPurchased else { return }
+        sub.justPurchased = false
+
+        let alreadyShown = UserDefaults.standard.bool(forKey: Self.notifOnboardingShownKey)
+        guard !alreadyShown else { return }
+
+        let status = await pushManager.currentAuthorizationStatus()
+        guard status == .notDetermined else { return }
+
+        UserDefaults.standard.set(true, forKey: Self.notifOnboardingShownKey)
+        showNotificationOnboarding = true
     }
 
     @ViewBuilder

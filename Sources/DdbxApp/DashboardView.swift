@@ -29,8 +29,10 @@ struct DashboardView: View {
 
                 if vm.isLoading {
                     SkeletonDashboard()
-                } else if let error = vm.error, vm.dealings.isEmpty {
-                    errorView(error)
+                } else if let failure = vm.failure, vm.dealings.isEmpty {
+                    LoadFailureView(failure: failure) {
+                        Task { await vm.refresh() }
+                    }
                 } else {
                     dealingsList
                 }
@@ -63,7 +65,7 @@ struct DashboardView: View {
                 }
             }
             .sheet(isPresented: $showAbout) {
-                AboutSheet()
+                PaywallView(showsClose: true)
             }
             .sheet(isPresented: $showSettings) {
                 AppSettingsSheet()
@@ -76,6 +78,8 @@ struct DashboardView: View {
             }
             .sheet(item: $selectedDeal) { deal in
                 DealDetailView(deal: deal)
+                    .presentationDetents([.large])
+                    .presentationDragIndicator(.visible)
             }
             .sheet(isPresented: $showRowSettings) {
                 MetricsSettingsSheet()
@@ -113,6 +117,13 @@ struct DashboardView: View {
             guard let rating = deal.analysis?.rating else { return false }
             return rating == .significant || rating == .noteworthy
         }
+    }
+
+    /// Stable partition: `.significant` deals float to the top of a day's list,
+    /// everything else keeps its incoming order.
+    private func prioritizeSignificant(_ deals: [Dealing]) -> [Dealing] {
+        deals.filter { $0.analysis?.rating == .significant }
+            + deals.filter { $0.analysis?.rating != .significant }
     }
 
     private var filterBar: some View {
@@ -269,7 +280,7 @@ struct DashboardView: View {
 
     private var filteredAllDays: [DashboardViewModel.FlatDayGroup] {
         vm.allByDay.compactMap { day in
-            let filtered = applyFilter(day.deals)
+            let filtered = prioritizeSignificant(applyFilter(day.deals))
             guard !filtered.isEmpty else { return nil }
             return DashboardViewModel.FlatDayGroup(
                 key: day.key, dayLabel: day.dayLabel,
@@ -281,7 +292,7 @@ struct DashboardView: View {
 
     private var filteredHistoryDays: [DashboardViewModel.FlatDayGroup] {
         vm.historyByDay.compactMap { day in
-            let filtered = applyFilter(day.deals)
+            let filtered = prioritizeSignificant(applyFilter(day.deals))
             guard !filtered.isEmpty else { return nil }
             return DashboardViewModel.FlatDayGroup(
                 key: day.key,
@@ -297,7 +308,7 @@ struct DashboardView: View {
     // MARK: - Today section
 
     private var todaySection: some View {
-        let all = applyFilter(vm.todayAnalysed + vm.todaySkipped)
+        let all = prioritizeSignificant(applyFilter(vm.todayAnalysed + vm.todaySkipped))
 
         return Section {
             if all.isEmpty {
@@ -438,21 +449,4 @@ struct DashboardView: View {
     }
 
 
-    private func errorView(_ message: String) -> some View {
-        VStack(spacing: 12) {
-            Image(systemName: "wifi.slash")
-                .font(.title)
-                .foregroundStyle(colors.muted)
-            Text(message)
-                .font(.instrument(size: 15))
-                .foregroundStyle(colors.muted)
-                .multilineTextAlignment(.center)
-            Button("Retry") {
-                Task { await vm.refresh() }
-            }
-            .font(.instrument(.semiBold, size: 15))
-            .foregroundStyle(colors.accent)
-        }
-        .padding()
-    }
 }

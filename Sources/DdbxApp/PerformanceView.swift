@@ -8,6 +8,7 @@ struct PerformanceView: View {
     @StateObject private var perfVM = PerformanceViewModel()
     @State private var selectedDeal: Dealing?
     @State private var activeCriterion: ActiveCriterion?
+    @State private var activeMetric: PerformanceMetricKind?
     @State private var showAbout = false
     @State private var showSettings = false
     @State private var showNotifications = false
@@ -47,7 +48,7 @@ struct PerformanceView: View {
                 }
             }
             .sheet(isPresented: $showAbout) {
-                AboutSheet()
+                PaywallView(showsClose: true)
             }
             .sheet(isPresented: $showSettings) {
                 AppSettingsSheet()
@@ -60,9 +61,14 @@ struct PerformanceView: View {
             }
             .sheet(item: $selectedDeal) { deal in
                 DealDetailView(deal: deal)
+                    .presentationDetents([.large])
+                    .presentationDragIndicator(.visible)
             }
             .sheet(item: $activeCriterion) { criterion in
                 criteriaSheet(for: criterion)
+            }
+            .sheet(item: $activeMetric) { kind in
+                PerformanceMetricSheet(kind: kind, config: perfVM.config)
             }
         }
         .task {
@@ -95,6 +101,9 @@ struct PerformanceView: View {
             }
             .padding(.bottom, 32)
         }
+        .refreshable {
+            await vm.refresh()
+        }
     }
 
     private var title: some View {
@@ -118,14 +127,20 @@ struct PerformanceView: View {
                     heroSkeletonRow
                 } else if perfVM.result.totalDeployed > 0 {
                     HStack(alignment: .top, spacing: 12) {
-                        heroStat(label: "Picks",
-                                 value: heroPicksValue,
-                                 tint: heroPicksTint,
-                                 alignment: .leading)
-                        heroStat(label: settings.marketBenchmark.displayName,
-                                 value: heroBenchValue,
-                                 tint: heroBenchTint,
-                                 alignment: .trailing)
+                        Button { activeMetric = .picks } label: {
+                            heroStat(label: "Picks",
+                                     value: heroPicksValue,
+                                     tint: heroPicksTint,
+                                     alignment: .leading)
+                        }
+                        .buttonStyle(.plain)
+                        Button { activeMetric = .benchmark(name: settings.marketBenchmark.displayName) } label: {
+                            heroStat(label: settings.marketBenchmark.displayName,
+                                     value: heroBenchValue,
+                                     tint: heroBenchTint,
+                                     alignment: .trailing)
+                        }
+                        .buttonStyle(.plain)
                     }
                 }
                 // else: filter returned zero deals — numbers hidden;
@@ -214,12 +229,19 @@ struct PerformanceView: View {
 
     private func heroStat(label: String, value: String, tint: Color, alignment: HorizontalAlignment) -> some View {
         VStack(alignment: alignment, spacing: 4) {
-            Text(label.uppercased())
-                .font(.system(size: 10, weight: .semibold))
-                .tracking(0.6)
-                .foregroundStyle(colors.muted)
-                .lineLimit(1)
-                .minimumScaleFactor(0.75)
+            HStack(spacing: 4) {
+                if alignment == .trailing { Spacer(minLength: 0) }
+                Text(label.uppercased())
+                    .font(.system(size: 10, weight: .semibold))
+                    .tracking(0.6)
+                    .foregroundStyle(colors.muted)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.75)
+                Image(systemName: "info.circle")
+                    .font(.system(size: 9, weight: .medium))
+                    .foregroundStyle(colors.muted.opacity(0.6))
+                if alignment == .leading { Spacer(minLength: 0) }
+            }
             Text(value)
                 .font(.instrument(.bold, size: 34))
                 .foregroundStyle(tint)

@@ -4,7 +4,7 @@ import Foundation
 final class DashboardViewModel: ObservableObject {
     @Published private(set) var dealings: [Dealing] = []
     @Published private(set) var isLoading = false
-    @Published private(set) var error: String?
+    @Published private(set) var failure: LoadFailure?
 
     private var versionFingerprint: String?
     private var pollingTask: Task<Void, Never>?
@@ -186,7 +186,7 @@ final class DashboardViewModel: ObservableObject {
 
     func refresh() async {
         isLoading = dealings.isEmpty
-        error = nil
+        failure = nil
         do {
             let fetched = try await APIClient.shared.dealings()
             dealings = fetched
@@ -194,7 +194,14 @@ final class DashboardViewModel: ObservableObject {
             versionFingerprint = "\(v.latest ?? ""):\(v.total)"
             isLoading = false
         } catch {
-            self.error = error.localizedDescription
+            // Cancellations happen when startPolling() is called again mid-fetch
+            // (e.g. DashboardView's .task firing after DdbxApp already kicked
+            // off polling). Don't surface them as a failure — a fresh refresh
+            // is already on its way.
+            if error is CancellationError || (error as? URLError)?.code == .cancelled {
+                return
+            }
+            self.failure = LoadFailure.from(error)
             isLoading = false
         }
     }
