@@ -5,6 +5,7 @@ struct DashboardView: View {
     @EnvironmentObject private var settings: AppSettings
     @EnvironmentObject private var pushManager: PushManager
     @EnvironmentObject private var vm: DashboardViewModel
+    @ObservedObject private var holidays = BankHolidayProvider.shared
     @State private var selectedDeal: Dealing?
     @State private var filter: DealFilter = .all
     @State private var sortMode: SortMode = .chronological
@@ -353,15 +354,34 @@ struct DashboardView: View {
         .background(colors.background)
     }
 
+    @ViewBuilder
     private var noDealsTodayCard: some View {
+        let status = LSE.status(at: Date(), holidays: holidays.englandAndWales)
+        if case .closed(let reopens, .holiday(let name)) = status {
+            emptyTodayCard(
+                icon: "calendar",
+                headline: "Closed for \(name)",
+                subtitle: "Reopens \(reopensPhrase(reopens))."
+            )
+        } else {
+            emptyTodayCard(
+                icon: "clock",
+                headline: "No deals have happened yet today",
+                subtitle: Self.noDealsSubtitle()
+            )
+        }
+    }
+
+    private func emptyTodayCard(icon: String, headline: String, subtitle: String) -> some View {
         VStack(spacing: 8) {
-            Image(systemName: "clock")
+            Image(systemName: icon)
                 .font(.system(size: 22))
                 .foregroundStyle(colors.muted)
-            Text("No deals have happened yet today")
+            Text(headline)
                 .font(.instrument(.semiBold, size: 15))
                 .foregroundStyle(colors.foreground)
-            Text(Self.noDealsSubtitle())
+                .multilineTextAlignment(.center)
+            Text(subtitle)
                 .font(.instrument(size: 13))
                 .foregroundStyle(colors.muted)
                 .multilineTextAlignment(.center)
@@ -376,6 +396,13 @@ struct DashboardView: View {
         )
         .padding(.horizontal, 16)
         .padding(.vertical, 8)
+    }
+
+    private func reopensPhrase(_ reopens: NextOpen) -> String {
+        switch reopens {
+        case .tomorrow: return "tomorrow"
+        case .named(let day): return "on \(day)"
+        }
     }
 
     /// Contextual subtitle for the empty-today card. Anchored to LSE hours

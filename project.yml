@@ -28,6 +28,8 @@ targets:
         buildPhase: resources
       - path: Sources/DdbxApp/Resources/PrivacyInfo.xcprivacy
         buildPhase: resources
+      - path: Sources/DdbxApp/Resources/bank-holidays.json
+        buildPhase: resources
     info:
       path: Sources/DdbxApp/Info.plist
       properties:
