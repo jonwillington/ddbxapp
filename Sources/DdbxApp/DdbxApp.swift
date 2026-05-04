@@ -56,7 +56,10 @@ struct DdbxApp: App {
                     if subscriptionManager.isSubscribed {
                         await pushManager.requestPermission()
                     }
-                    // Prefetch deals while paywall is showing
+                    // Prefetch deals while paywall is showing. Sync the
+                    // benchmark first so the refresh-driven lift-price fetch
+                    // hits the right ticker on this very first run.
+                    dashboardVM.benchmarkTicker = settings.marketBenchmark.ticker
                     dashboardVM.startPolling()
                 }
         }
@@ -75,17 +78,22 @@ private struct RootView: View {
     private var colors: DdbxColors { DdbxColors(colorScheme: colorScheme) }
 
     var body: some View {
-        if sub.isLoading {
-            ZStack {
-                colors.background.ignoresSafeArea()
+        ZStack {
+            colors.background.ignoresSafeArea()
+            if sub.isLoading {
                 ProgressView()
                     .tint(colors.muted)
                     .scaleEffect(1.5)
+                    .transition(.opacity)
+            } else if sub.isSubscribed {
+                ContentView()
+                    .transition(.opacity)
+            } else {
+                PaywallView()
+                    .transition(.opacity)
             }
-        } else if sub.isSubscribed {
-            ContentView()
-        } else {
-            PaywallView()
         }
+        .animation(.easeInOut(duration: 0.2), value: sub.isLoading)
+        .animation(.easeInOut(duration: 0.2), value: sub.isSubscribed)
     }
 }

@@ -30,21 +30,26 @@ struct DashboardView: View {
 
                 if vm.isLoading {
                     SkeletonDashboard()
+                        .transition(.opacity)
                 } else if let failure = vm.failure, vm.dealings.isEmpty {
                     LoadFailureView(failure: failure) {
                         Task { await vm.refresh() }
                     }
+                    .transition(.opacity)
                 } else {
                     dealingsList
+                        .opacity(vm.isRefreshing ? 0.5 : 1.0)
+                        .animation(.easeInOut(duration: 0.15), value: vm.isRefreshing)
+                        .transition(.opacity)
                 }
             }
+            .animation(.easeInOut(duration: 0.2), value: vm.isLoading)
             .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
             .toolbarBackground(colors.background, for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
             .refreshable {
-                await vm.refresh()
-                await vm.fetchLiftPrices(benchmarkTicker: settings.marketBenchmark.ticker)
+                await vm.userInitiatedRefresh(benchmarkTicker: settings.marketBenchmark.ticker)
             }
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
@@ -87,12 +92,14 @@ struct DashboardView: View {
                     .environmentObject(settings)
             }
         }
-        .task { vm.startPolling() }
-        .onChange(of: vm.dealings.isEmpty) { isEmpty in
-            // Prices always needed — trend line on every row uses liftPct
-            if !isEmpty { Task { await vm.fetchLiftPrices(benchmarkTicker: settings.marketBenchmark.ticker) } }
+        .task {
+            // Polling is started once at app launch by DdbxApp.task; this
+            // view only needs to keep the VM's benchmark in sync so the
+            // refresh-driven lift-price fetch uses the current setting.
+            vm.benchmarkTicker = settings.marketBenchmark.ticker
         }
         .onChange(of: settings.marketBenchmark) { _ in
+            vm.benchmarkTicker = settings.marketBenchmark.ticker
             Task { await vm.fetchLiftPrices(benchmarkTicker: settings.marketBenchmark.ticker) }
         }
         .onChange(of: pushManager.pendingDealingId) { dealingId in

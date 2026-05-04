@@ -174,6 +174,11 @@ struct DealDetailView: View {
             if let analysis = deal.analysis {
                 metricCell("Confidence", value: "\(Int(analysis.confidence * 100))%")
                 metricCell("Catalyst", value: analysis.catalystWindow)
+                if let industry = deal.sectorNormalized?.displayName {
+                    metricCell("Industry", value: industry)
+                }
+            } else if let industry = deal.sectorNormalized?.displayName {
+                metricCell("Industry", value: industry)
             }
         }
         .padding(.vertical, 12)

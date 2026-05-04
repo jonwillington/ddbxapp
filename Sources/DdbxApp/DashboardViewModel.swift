@@ -4,7 +4,16 @@ import Foundation
 final class DashboardViewModel: ObservableObject {
     @Published private(set) var dealings: [Dealing] = []
     @Published private(set) var isLoading = false
+    /// True only during a user-initiated pull-to-refresh on an already-loaded
+    /// list, so the view can dim existing rows as a "reloading" hint while
+    /// the system pull spinner is also showing. Distinct from `isLoading`,
+    /// which gates the skeleton on first paint.
+    @Published private(set) var isRefreshing = false
     @Published private(set) var failure: LoadFailure?
+
+    /// Set by DashboardView/DdbxApp from AppSettings so refresh() can kick
+    /// off lift-price fetches in parallel without taking a settings dep.
+    var benchmarkTicker: String = "^FTAS"
 
     private var versionFingerprint: String?
     private var pollingTask: Task<Void, Never>?
@@ -184,15 +193,42 @@ final class DashboardViewModel: ObservableObject {
         pollingTask = nil
     }
 
+    /// Pull-to-refresh entry point: dim the list while both the dealings
+    /// fetch and the lift-price refresh are in flight, so the user gets a
+    /// single coherent "reloading" pass instead of two staggered updates.
+    /// Falls through to the normal skeleton path on a cold first load.
+    func userInitiatedRefresh(benchmarkTicker: String) async {
+        guard !dealings.isEmpty else {
+            await refresh()
+            return
+        }
+        isRefreshing = true
+        defer { isRefreshing = false }
+        await refresh()
+        await fetchLiftPrices(benchmarkTicker: benchmarkTicker)
+    }
+
     func refresh() async {
         isLoading = dealings.isEmpty
         failure = nil
         do {
             let fetched = try await APIClient.shared.dealings()
+            let firstNonEmpty = dealings.isEmpty && !fetched.isEmpty
             dealings = fetched
+            // Clear the skeleton as soon as the rows can render — the
+            // version fetch below is for polling bookkeeping and shouldn't
+            // gate first paint.
+            isLoading = false
+            // Kick lift prices off in parallel so trend lines/percentages
+            // arrive with the rows rather than 200-500ms after.
+            if firstNonEmpty {
+                let benchmark = benchmarkTicker
+                Task { [weak self] in
+                    await self?.fetchLiftPrices(benchmarkTicker: benchmark)
+                }
+            }
             let v = try await APIClient.shared.version()
             versionFingerprint = "\(v.latest ?? ""):\(v.total)"
-            isLoading = false
         } catch {
             // Cancellations happen when startPolling() is called again mid-fetch
             // (e.g. DashboardView's .task firing after DdbxApp already kicked

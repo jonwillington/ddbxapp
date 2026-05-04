@@ -105,8 +105,10 @@ struct PerformanceView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 0) {
                 title
-                modeSegmented
                 heroCard
+                // Mode toggle sits above the content it actually controls,
+                // not above the shared filters in the hero card.
+                modeSegmented
                 if perfVM.config.mode == .overall {
                     viewModeSegmented
                     chartSection
@@ -132,7 +134,8 @@ struct PerformanceView: View {
         }
         .pickerStyle(.segmented)
         .padding(.horizontal, 16)
-        .padding(.bottom, 8)
+        .padding(.top, 12)
+        .padding(.bottom, 4)
     }
 
     // MARK: - Sector leaderboard (byIndustry mode)
@@ -141,9 +144,16 @@ struct PerformanceView: View {
     private var sectorLeaderboardSection: some View {
         let rows = perfVM.sectorResults
         if rows.isEmpty {
-            sectorEmptyState
-                .padding(.horizontal, 16)
-                .padding(.top, 12)
+            if isSectorFirstLoad {
+                VStack(alignment: .leading, spacing: 0) {
+                    sectorLeaderboardHeader
+                    sectorSkeletonList
+                }
+            } else {
+                sectorEmptyState
+                    .padding(.horizontal, 16)
+                    .padding(.top, 12)
+            }
         } else {
             VStack(alignment: .leading, spacing: 0) {
                 sectorLeaderboardHeader
@@ -170,6 +180,67 @@ struct PerformanceView: View {
             .opacity(perfVM.isComputing ? 0.45 : 1.0)
             .animation(recomputeAnimation, value: perfVM.isComputing)
         }
+    }
+
+    /// True while we have no sector rows AND a compute is in flight (or we
+    /// haven't received any deals yet). Mirrors the chart's `isFirstLoad`
+    /// pattern so the leaderboard shows skeletons instead of the empty
+    /// state during initial data load.
+    private var isSectorFirstLoad: Bool {
+        perfVM.sectorResults.isEmpty && (vm.dealings.isEmpty || perfVM.isComputing)
+    }
+
+    private var sectorSkeletonList: some View {
+        VStack(spacing: 0) {
+            ForEach(0..<5, id: \.self) { i in
+                sectorSkeletonRow
+                if i < 4 {
+                    Divider()
+                        .overlay(colors.separator)
+                        .padding(.leading, 16)
+                }
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .background(colors.surface)
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .strokeBorder(colors.border, lineWidth: 0.5)
+        )
+        .padding(.horizontal, 16)
+        .shimmer()
+    }
+
+    private var sectorSkeletonRow: some View {
+        HStack(spacing: 12) {
+            VStack(alignment: .leading, spacing: 4) {
+                RoundedRectangle(cornerRadius: 3)
+                    .fill(colors.surfaceSecondary)
+                    .frame(width: 120, height: 14)
+                RoundedRectangle(cornerRadius: 3)
+                    .fill(colors.surfaceSecondary)
+                    .frame(width: 48, height: 11)
+                RoundedRectangle(cornerRadius: 2)
+                    .fill(colors.surfaceSecondary)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 4)
+                    .padding(.top, 2)
+            }
+            VStack(alignment: .trailing, spacing: 4) {
+                RoundedRectangle(cornerRadius: 3)
+                    .fill(colors.surfaceSecondary)
+                    .frame(width: 52, height: 14)
+                RoundedRectangle(cornerRadius: 3)
+                    .fill(colors.surfaceSecondary)
+                    .frame(width: 84, height: 11)
+            }
+            RoundedRectangle(cornerRadius: 2)
+                .fill(colors.surfaceSecondary)
+                .frame(width: 6, height: 11)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
     }
 
     private var sectorEmptyState: some View {
