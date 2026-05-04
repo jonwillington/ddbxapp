@@ -5,6 +5,10 @@ struct PerformanceChart: View {
     let benchmark: [PortfolioPoint]
     let deployed: [PortfolioPoint]
     let viewMode: PerformanceViewMode
+    /// ISO yyyy-MM-dd strings of dates to mark on the x-axis as purchase
+    /// points. Each date is mapped to its index in the strategy timeline
+    /// and rendered as a small upward triangle hugging the bottom edge.
+    var entryDates: [String] = []
 
     @Environment(\.ddbxColors) private var colors
     @State private var scrubIndex: Int?
@@ -195,6 +199,9 @@ struct PerformanceChart: View {
             with: .color(colors.muted)
         )
 
+        drawEntryTicks(ctx: ctx, w: chartW, h: h, xOffset: canvasLeft,
+                       color: colors.accent.opacity(0.7))
+
         if let i = scrubIndex, i < n {
             drawScrubMarker(ctx: ctx, index: i, w: chartW, h: h,
                             xOffset: canvasLeft, yFor: yFor,
@@ -251,11 +258,51 @@ struct PerformanceChart: View {
             with: .color(lineColor)
         )
 
+        drawEntryTicks(ctx: ctx, w: chartW, h: h, xOffset: canvasLeft,
+                       color: lineColor.opacity(0.7))
+
         if let i = scrubIndex, i < n {
             drawScrubMarker(ctx: ctx, index: i, w: chartW, h: h,
                             xOffset: canvasLeft, yFor: yFor,
                             points: [(alphaPct[i], lineColor)])
         }
+    }
+
+    /// Render a small upward triangle at the bottom of the plot for each
+    /// entry date. Multiple deals on the same day overlap into one mark —
+    /// fine, the dot is small enough that this reads as "≥1 buy here".
+    private func drawEntryTicks(
+        ctx: GraphicsContext,
+        w: CGFloat,
+        h: CGFloat,
+        xOffset: CGFloat,
+        color: Color
+    ) {
+        guard !entryDates.isEmpty, n >= 2 else { return }
+        let size: CGFloat = 6
+        let baseline = h - 0.5  // sit just above the chart's bottom edge
+        let seen = Set(entryDates.compactMap(indexForEntry(date:)))
+        for idx in seen {
+            let x = xOffset + w * CGFloat(idx) / CGFloat(max(n - 1, 1))
+            var triangle = Path()
+            triangle.move(to: CGPoint(x: x, y: baseline - size))
+            triangle.addLine(to: CGPoint(x: x - size / 2, y: baseline))
+            triangle.addLine(to: CGPoint(x: x + size / 2, y: baseline))
+            triangle.closeSubpath()
+            ctx.fill(triangle, with: .color(color))
+        }
+    }
+
+    /// Binary-search the strategy timeline for the first index whose date
+    /// is on or after `date`. Returns nil if the date is past the end.
+    private func indexForEntry(date: String) -> Int? {
+        guard n > 0 else { return nil }
+        var lo = 0, hi = n
+        while lo < hi {
+            let mid = (lo + hi) / 2
+            if strategy[mid].date < date { lo = mid + 1 } else { hi = mid }
+        }
+        return lo < n ? lo : nil
     }
 
     // MARK: - Shared drawing helpers

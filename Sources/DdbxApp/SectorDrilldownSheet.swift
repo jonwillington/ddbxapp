@@ -89,7 +89,8 @@ struct SectorDrilldownSheet: View {
                 strategy: result.strategy,
                 benchmark: result.benchmark,
                 deployed: result.deployed,
-                viewMode: viewMode
+                viewMode: viewMode,
+                entryDates: result.contributors.map(\.entryDate)
             )
         } else {
             Text("Not enough data to render a chart for this sector.")

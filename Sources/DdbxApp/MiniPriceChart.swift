@@ -119,8 +119,14 @@ struct MiniPriceChart: View {
             let w = geo.size.width
             let h = geo.size.height
             let prices = visibleBars.map(\.closePence)
-            let minP = prices.min() ?? 0
-            let maxP = prices.max() ?? 1
+            let rawMin = prices.min() ?? 0
+            let rawMax = prices.max() ?? 1
+            // On "Since entry" the entry price is the reference the user is
+            // judging the line against — fold it into the Y-bounds so the
+            // line's slope matches the gain/loss instead of just tracking
+            // the period's own low→high.
+            let minP = period == .since ? min(rawMin, entryPricePence) : rawMin
+            let maxP = period == .since ? max(rawMax, entryPricePence) : rawMax
             let yPad = max((maxP - minP) * 0.06, 5)
             let yMin = minP - yPad
             let yMax = maxP + yPad

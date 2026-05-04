@@ -3,19 +3,15 @@ import SwiftUI
 // MARK: - Shimmer modifier
 
 struct ShimmerModifier: ViewModifier {
-    @State private var opacity: Double = 0.55
-
+    // Drive opacity from a TimelineView rather than a SwiftUI animation, so
+    // there's no animation transaction that can attach to layout properties
+    // and make skeleton rectangles appear to stretch as they pulse.
     func body(content: Content) -> some View {
-        content
-            .opacity(opacity)
-            // Scoped via .animation(_:value:) so the repeatForever transaction
-            // doesn't leak into sibling state mutations (e.g. priceDataReady)
-            // and implicitly animate layout changes that should be instant.
-            .animation(
-                .easeInOut(duration: 1.0).repeatForever(autoreverses: true),
-                value: opacity
-            )
-            .onAppear { opacity = 1.0 }
+        TimelineView(.animation) { context in
+            let t = context.date.timeIntervalSinceReferenceDate
+            let phase = (1 - cos(t * .pi)) / 2        // 2s cycle, easeInOut shape
+            content.opacity(0.55 + 0.45 * phase)
+        }
     }
 }
 

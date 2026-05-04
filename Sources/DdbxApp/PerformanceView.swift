@@ -553,7 +553,8 @@ struct PerformanceView: View {
                     strategy: perfVM.result.strategy,
                     benchmark: perfVM.result.benchmark,
                     deployed: perfVM.result.deployed,
-                    viewMode: perfVM.config.viewMode
+                    viewMode: perfVM.config.viewMode,
+                    entryDates: perfVM.result.contributors.map(\.entryDate)
                 )
             } else {
                 emptyChart

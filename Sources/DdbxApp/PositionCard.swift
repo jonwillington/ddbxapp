@@ -11,7 +11,26 @@ struct PositionCard: View {
 
     private var stockPct: Double { (currentPence - entryPence) / entryPence }
     private var up: Bool { stockPct >= 0 }
-    private var currentValue: Double { (Double(shares) * currentPence) / 100.0 }
+    /// When `shares × entryPence` disagrees with `originalValue` it means the
+    /// server-side row is internally inconsistent — either `shares` is off
+    /// (rare 10×/100× LLM extraction errors) or `value_gbp` is. Without an
+    /// independent signal, pick whichever side produces a trade size in the
+    /// plausible range for a director RNS (≥ £5k disclosure threshold,
+    /// ≤ £10M). If both sides land in range or both don't, fall back to the
+    /// reported share count rather than guess.
+    private var effectiveShares: Double {
+        let reported = Double(shares)
+        guard entryPence > 0, originalValue > 0 else { return reported }
+        let computed = reported * entryPence / 100.0
+        let ratio = max(computed, originalValue) / min(computed, originalValue)
+        if ratio < 1.05 { return reported }
+        let plausible: (Double) -> Bool = { $0 >= 5_000 && $0 <= 10_000_000 }
+        if plausible(originalValue) && !plausible(computed) {
+            return originalValue * 100.0 / entryPence
+        }
+        return reported
+    }
+    private var currentValue: Double { (effectiveShares * currentPence) / 100.0 }
     private var gainLoss: Double { currentValue - originalValue }
     private var alphaPct: Double? {
         guard let ftse = ftseReturnPct else { return nil }
