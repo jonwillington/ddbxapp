@@ -4,6 +4,7 @@ import Foundation
 final class PerformanceViewModel: ObservableObject {
     @Published var config: StrategyConfig
     @Published private(set) var result: PerformanceResult = .empty
+    @Published private(set) var sectorResults: [SectorResult] = []
     @Published private(set) var isComputing: Bool = false
     @Published private(set) var error: String?
 
@@ -57,6 +58,8 @@ final class PerformanceViewModel: ObservableObject {
 
     private static func loadConfig() -> StrategyConfig {
         let ud = UserDefaults.standard
+        let mode = ud.string(forKey: udPrefix + "mode")
+            .flatMap(PerformanceMode.init(rawValue:)) ?? .overall
         let universe = ud.string(forKey: udPrefix + "universe")
             .flatMap(PerformanceUniverse.init(rawValue:)) ?? .suggested
         let window = ud.string(forKey: udPrefix + "timeWindow")
@@ -68,6 +71,7 @@ final class PerformanceViewModel: ObservableObject {
         let viewMode = ud.string(forKey: udPrefix + "viewMode")
             .flatMap(PerformanceViewMode.init(rawValue:)) ?? .realTerms
         return StrategyConfig(
+            mode: mode,
             universe: universe,
             timeWindow: window,
             exitRule: exit,
@@ -79,6 +83,7 @@ final class PerformanceViewModel: ObservableObject {
 
     private static func saveConfig(_ cfg: StrategyConfig) {
         let ud = UserDefaults.standard
+        ud.set(cfg.mode.rawValue, forKey: udPrefix + "mode")
         ud.set(cfg.universe.rawValue, forKey: udPrefix + "universe")
         ud.set(cfg.timeWindow.rawValue, forKey: udPrefix + "timeWindow")
         ud.set(cfg.exitRule.rawValue, forKey: udPrefix + "exitRule")
@@ -161,6 +166,44 @@ final class PerformanceViewModel: ObservableObject {
             benchmarkBars: benchBars
         )
         result = next
+
+        if cfg.mode == .byIndustry {
+            sectorResults = computeSectorResults(
+                deals: filtered,
+                config: cfg,
+                priceCache: priceCache,
+                benchmarkBars: benchBars
+            )
+        } else if !sectorResults.isEmpty {
+            sectorResults = []
+        }
+    }
+
+    /// Group `deals` by their `sectorNormalized`, run the existing per-deal
+    /// compute on each group, return rows sorted by alpha desc. Deals with
+    /// no sector are dropped from the leaderboard rather than bucketed under
+    /// "Unknown" — better to under-show than mis-classify.
+    private func computeSectorResults(
+        deals: [Dealing],
+        config: StrategyConfig,
+        priceCache: [String: [PriceBar]],
+        benchmarkBars: [PriceBar]
+    ) -> [SectorResult] {
+        var grouped: [SectorNormalized: [Dealing]] = [:]
+        for deal in deals {
+            guard let sector = deal.sectorNormalized else { continue }
+            grouped[sector, default: []].append(deal)
+        }
+        let rows: [SectorResult] = grouped.map { sector, dealsInSector in
+            let r = computeResult(
+                deals: dealsInSector,
+                config: config,
+                priceCache: priceCache,
+                benchmarkBars: benchmarkBars
+            )
+            return SectorResult(sector: sector, result: r)
+        }
+        return rows.sorted { $0.result.alphaReturnPct > $1.result.alphaReturnPct }
     }
 
     // MARK: - Price fetching

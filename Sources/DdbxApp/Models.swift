@@ -17,6 +17,16 @@ struct Dealing: Codable, Identifiable, Sendable {
     let triage: Triage?
     let analysis: Analysis?
     let performance: [PerformanceRow]?
+    let sector: String?
+    /// Raw API string. Use `sectorNormalized` to access the enum; a future
+    /// server-side bucket we don't know about decodes to a non-nil string but
+    /// resolves to nil here, instead of breaking the whole Dealing decode.
+    private let sectorNormalizedRaw: String?
+    let sicCodes: [String]?
+
+    var sectorNormalized: SectorNormalized? {
+        sectorNormalizedRaw.flatMap(SectorNormalized.init(rawValue:))
+    }
 
     enum CodingKeys: String, CodingKey {
         case id
@@ -29,6 +39,9 @@ struct Dealing: Codable, Identifiable, Sendable {
         case pricePence = "price_pence"
         case valueGbp = "value_gbp"
         case triage, analysis, performance
+        case sector
+        case sectorNormalizedRaw = "sector_normalized"
+        case sicCodes = "sic_codes"
     }
 
     /// The date used for display grouping (disclosed preferred, falls back to trade)
@@ -167,6 +180,44 @@ struct EvidencePoint: Codable, Sendable {
         case headline, detail
         case sourceLabel = "source_label"
         case sourceUrl = "source_url"
+    }
+}
+
+// MARK: - Sector
+
+/// ICB top-level industries. Mirrors the dd-site `SectorNormalized` enum
+/// returned on the Dealing payload. Closed enum — must stay in sync with
+/// `worker/db/types.ts`. Add a case here in the same release that adds one
+/// server-side; otherwise older builds would fail to decode dealings.
+enum SectorNormalized: String, Codable, CaseIterable, Sendable {
+    case technology = "Technology"
+    case telecommunications = "Telecommunications"
+    case healthCare = "Health Care"
+    case financials = "Financials"
+    case realEstate = "Real Estate"
+    case consumerDiscretionary = "Consumer Discretionary"
+    case consumerStaples = "Consumer Staples"
+    case industrials = "Industrials"
+    case basicMaterials = "Basic Materials"
+    case energy = "Energy"
+    case utilities = "Utilities"
+
+    var displayName: String { rawValue }
+
+    var shortName: String {
+        switch self {
+        case .technology: return "Tech"
+        case .telecommunications: return "Telecoms"
+        case .healthCare: return "Health"
+        case .financials: return "Financials"
+        case .realEstate: return "Real Estate"
+        case .consumerDiscretionary: return "Cons. Disc."
+        case .consumerStaples: return "Cons. Staples"
+        case .industrials: return "Industrials"
+        case .basicMaterials: return "Materials"
+        case .energy: return "Energy"
+        case .utilities: return "Utilities"
+        }
     }
 }
 

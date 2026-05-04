@@ -33,6 +33,7 @@
 		9FAD3C82789A490736C57844 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = B098096651A86202D4EBE211 /* Theme.swift */; };
 		A94607882B5B614BF7E16B92 /* Fonts in Resources */ = {isa = PBXBuildFile; fileRef = AEBAB456D9D66F711A25C8A5 /* Fonts */; };
 		A95BC97E44E77563221B733A /* BackgroundRefresh.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C2F504BBB8A77C170055022 /* BackgroundRefresh.swift */; };
+		D89F899B12597CAD69BAB1C9 /* SectorDrilldownSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F8C02417670D753FCBA3C54 /* SectorDrilldownSheet.swift */; };
 		D9A2F447A6E8ED7F9B8A33A3 /* DealRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1EB0CF1D5036B7D8CC3B568C /* DealRow.swift */; };
 		E72B103A7F665055318F49A6 /* MiniPriceChart.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54767CE746AC9BBCAFD1D053 /* MiniPriceChart.swift */; };
 		E9EF822690398677B39082BB /* SubscriptionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FA45B50A6CF4AF818E5E736 /* SubscriptionManager.swift */; };
@@ -74,6 +75,7 @@
 		90A1E2D21D2A5A86DC4D53E0 /* AboutSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutSheet.swift; sourceTree = "<group>"; };
 		97CB8A29F92991097F25F084 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		9C2F504BBB8A77C170055022 /* BackgroundRefresh.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundRefresh.swift; sourceTree = "<group>"; };
+		9F8C02417670D753FCBA3C54 /* SectorDrilldownSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SectorDrilldownSheet.swift; sourceTree = "<group>"; };
 		A9FB40651F7798A793F8D60D /* PerformanceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PerformanceView.swift; sourceTree = "<group>"; };
 		AEBAB456D9D66F711A25C8A5 /* Fonts */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Fonts; path = Sources/DdbxApp/Resources/Fonts; sourceTree = SOURCE_ROOT; };
 		B098096651A86202D4EBE211 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
@@ -125,6 +127,7 @@
 				6ED582D89E32662E7D5838C2 /* PositionCard.swift */,
 				01C769F1F8FFAA6EE01E4FD2 /* PushManager.swift */,
 				1CDFD0C53A58F2F9F1BE55D7 /* SearchView.swift */,
+				9F8C02417670D753FCBA3C54 /* SectorDrilldownSheet.swift */,
 				B175C652774542C757ED8A37 /* SkeletonView.swift */,
 				2FA45B50A6CF4AF818E5E736 /* SubscriptionManager.swift */,
 				B098096651A86202D4EBE211 /* Theme.swift */,
@@ -264,6 +267,7 @@
 				6EECE5AD625A9AE27219E5F7 /* PositionCard.swift in Sources */,
 				F6FD93F47891A70FF6E834F9 /* PushManager.swift in Sources */,
 				01F74F060343ED06A7D71ABE /* SearchView.swift in Sources */,
+				D89F899B12597CAD69BAB1C9 /* SectorDrilldownSheet.swift in Sources */,
 				ED75F59F90EB076EB75804CF /* SkeletonView.swift in Sources */,
 				E9EF822690398677B39082BB /* SubscriptionManager.swift in Sources */,
 				9FAD3C82789A490736C57844 /* Theme.swift in Sources */,

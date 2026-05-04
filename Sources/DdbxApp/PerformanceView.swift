@@ -7,6 +7,7 @@ struct PerformanceView: View {
     @EnvironmentObject private var vm: DashboardViewModel
     @StateObject private var perfVM = PerformanceViewModel()
     @State private var selectedDeal: Dealing?
+    @State private var selectedSector: SectorResult?
     @State private var activeCriterion: ActiveCriterion?
     @State private var activeMetric: PerformanceMetricKind?
     @State private var showAbout = false
@@ -70,6 +71,16 @@ struct PerformanceView: View {
             .sheet(item: $activeMetric) { kind in
                 PerformanceMetricSheet(kind: kind, config: perfVM.config)
             }
+            .sheet(item: $selectedSector) { sectorResult in
+                SectorDrilldownSheet(
+                    sector: sectorResult.sector,
+                    result: sectorResult.result,
+                    benchmarkName: settings.marketBenchmark.displayName,
+                    viewMode: perfVM.config.viewMode
+                )
+                .presentationDetents([.large])
+                .presentationDragIndicator(.visible)
+            }
         }
         .task {
             vm.startPolling()
@@ -94,16 +105,185 @@ struct PerformanceView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 0) {
                 title
+                modeSegmented
                 heroCard
-                viewModeSegmented
-                chartSection
-                contributorsSection
+                if perfVM.config.mode == .overall {
+                    viewModeSegmented
+                    chartSection
+                    contributorsSection
+                } else {
+                    sectorLeaderboardSection
+                }
             }
             .padding(.bottom, 32)
         }
         .refreshable {
             await vm.refresh()
         }
+    }
+
+    // MARK: - Mode toggle (Overall vs By Industry)
+
+    private var modeSegmented: some View {
+        Picker("", selection: $perfVM.config.mode) {
+            ForEach(PerformanceMode.allCases, id: \.self) { mode in
+                Text(mode.displayName).tag(mode)
+            }
+        }
+        .pickerStyle(.segmented)
+        .padding(.horizontal, 16)
+        .padding(.bottom, 8)
+    }
+
+    // MARK: - Sector leaderboard (byIndustry mode)
+
+    @ViewBuilder
+    private var sectorLeaderboardSection: some View {
+        let rows = perfVM.sectorResults
+        if rows.isEmpty {
+            sectorEmptyState
+                .padding(.horizontal, 16)
+                .padding(.top, 12)
+        } else {
+            VStack(alignment: .leading, spacing: 0) {
+                sectorLeaderboardHeader
+                VStack(spacing: 0) {
+                    ForEach(rows) { row in
+                        sectorRow(row, maxAlpha: maxAbsAlpha(rows))
+                        if row.id != rows.last?.id {
+                            Divider()
+                                .overlay(colors.separator)
+                                .padding(.leading, 16)
+                        }
+                    }
+                }
+                .frame(maxWidth: .infinity)
+                .background(colors.surface)
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .strokeBorder(colors.border, lineWidth: 0.5)
+                )
+                .padding(.horizontal, 16)
+                .animation(.easeInOut(duration: 0.28), value: rows.map(\.id))
+            }
+            .opacity(perfVM.isComputing ? 0.45 : 1.0)
+            .animation(recomputeAnimation, value: perfVM.isComputing)
+        }
+    }
+
+    private var sectorEmptyState: some View {
+        VStack(spacing: 8) {
+            Image(systemName: "square.grid.2x2")
+                .font(.system(size: 22))
+                .foregroundStyle(colors.muted.opacity(0.5))
+            Text("No sector-classified deals in this window")
+                .font(.instrument(size: 13))
+                .foregroundStyle(colors.muted)
+                .multilineTextAlignment(.center)
+        }
+        .frame(maxWidth: .infinity)
+        .frame(height: 160)
+        .background(colors.surface, in: RoundedRectangle(cornerRadius: 12))
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .strokeBorder(colors.border, lineWidth: 0.5)
+        )
+    }
+
+    private var sectorLeaderboardHeader: some View {
+        HStack {
+            Text("By Industry")
+                .font(.instrument(.semiBold, size: 16))
+                .foregroundStyle(colors.foreground)
+            Spacer()
+            Text("sorted by alpha")
+                .font(.instrument(size: 12))
+                .foregroundStyle(colors.muted)
+        }
+        .padding(.horizontal, 16)
+        .padding(.top, 16)
+        .padding(.bottom, 8)
+    }
+
+    private func sectorRow(_ row: SectorResult, maxAlpha: Double) -> some View {
+        Button {
+            selectedSector = row
+        } label: {
+            HStack(spacing: 12) {
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack(spacing: 6) {
+                        Text(row.sector.displayName)
+                            .font(.instrument(.semiBold, size: 14))
+                            .foregroundStyle(colors.foreground)
+                            .lineLimit(1)
+                        Spacer(minLength: 0)
+                    }
+                    Text("\(row.dealCount) deal\(row.dealCount == 1 ? "" : "s")")
+                        .font(.instrument(size: 11))
+                        .foregroundStyle(colors.muted)
+                    alphaBar(value: row.alphaPp, maxAbs: maxAlpha)
+                }
+                VStack(alignment: .trailing, spacing: 2) {
+                    Text(formatPp(row.alphaPp))
+                        .font(.instrument(.semiBold, size: 14))
+                        .foregroundStyle(row.alphaPp >= 0 ? Color.buyGreen : Color.sellRed)
+                        .lineLimit(1)
+                        .fixedSize()
+                    HStack(spacing: 4) {
+                        Text(formatPct(row.result.strategyReturnPct))
+                            .font(.instrument(size: 11))
+                            .foregroundStyle(colors.muted)
+                        Text("vs")
+                            .font(.instrument(size: 10))
+                            .foregroundStyle(colors.muted.opacity(0.6))
+                        Text(formatPct(row.result.benchmarkReturnPct))
+                            .font(.instrument(size: 11))
+                            .foregroundStyle(colors.muted)
+                    }
+                    .lineLimit(1)
+                    .fixedSize()
+                }
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundStyle(colors.muted.opacity(0.5))
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+            .frame(maxWidth: .infinity)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func alphaBar(value: Double, maxAbs: Double) -> some View {
+        let normalized = maxAbs > 0 ? min(1.0, abs(value) / maxAbs) : 0
+        let isPositive = value >= 0
+        return GeometryReader { geo in
+            let half = geo.size.width / 2
+            ZStack(alignment: .leading) {
+                // Centerline
+                Rectangle()
+                    .fill(colors.border)
+                    .frame(width: geo.size.width, height: 1)
+                Rectangle()
+                    .fill(isPositive ? Color.buyGreen : Color.sellRed)
+                    .frame(width: half * normalized, height: 4)
+                    .offset(x: isPositive ? half : half - (half * normalized))
+            }
+            .frame(height: 4)
+        }
+        .frame(height: 4)
+        .padding(.top, 2)
+    }
+
+    private func maxAbsAlpha(_ rows: [SectorResult]) -> Double {
+        rows.map { abs($0.alphaPp) }.max() ?? 0
+    }
+
+    private func formatPp(_ value: Double) -> String {
+        let sign = value >= 0 ? "+" : "−"
+        return "\(sign)\(String(format: "%.1f", abs(value)))pp"
     }
 
     private var title: some View {

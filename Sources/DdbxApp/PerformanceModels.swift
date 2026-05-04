@@ -125,9 +125,24 @@ enum PerformanceViewMode: String, CaseIterable, Codable, Sendable {
     }
 }
 
+// MARK: - Performance mode (Overall vs By Industry)
+
+enum PerformanceMode: String, CaseIterable, Codable, Sendable {
+    case overall
+    case byIndustry
+
+    var displayName: String {
+        switch self {
+        case .overall:    "Overall"
+        case .byIndustry: "By Industry"
+        }
+    }
+}
+
 // MARK: - Config
 
 struct StrategyConfig: Equatable {
+    var mode: PerformanceMode
     var universe: PerformanceUniverse
     var timeWindow: PerformanceTimeWindow
     var exitRule: PerformanceExitRule
@@ -138,6 +153,7 @@ struct StrategyConfig: Equatable {
     var excludedDealIds: Set<String>
 
     static let `default` = StrategyConfig(
+        mode: .overall,
         universe: .suggested,
         timeWindow: .days90,
         exitRule: .horizon90,
@@ -215,4 +231,15 @@ struct PerformanceResult: Equatable {
         excludedForDataCount: 0,
         dealCount: 0
     )
+}
+
+// MARK: - Sector result (per-industry leaderboard row)
+
+struct SectorResult: Identifiable, Equatable {
+    let sector: SectorNormalized
+    let result: PerformanceResult
+
+    var id: String { sector.rawValue }
+    var dealCount: Int { result.dealCount }
+    var alphaPp: Double { result.alphaReturnPct * 100 }
 }
