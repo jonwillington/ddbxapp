@@ -13,6 +13,7 @@ struct DashboardView: View {
     @State private var showAbout = false
     @State private var showSettings = false
     @State private var showNotifications = false
+    @State private var expandedMonths: Set<String> = []
 
     enum DealFilter: String, CaseIterable {
         case all = "All"
@@ -210,18 +211,14 @@ struct DashboardView: View {
                     liftContent
                 } else if filter == .noteworthyPlus {
                     // No Today section — fold everything into the day stream.
-                    ForEach(filteredAllDays) { day in
-                        dealDaySection(day: day)
-                    }
+                    monthAwareDays(filteredAllDays)
                 } else {
                     todaySection
 
-                    // History — flat day sections. Day headers are sticky; when a
-                    // day is the first of its month the header carries the month
-                    // label above the day label.
-                    ForEach(filteredHistoryDays) { day in
-                        dealDaySection(day: day)
-                    }
+                    // History — flat day sections. The most recent month renders
+                    // inline; older months collapse into a tappable disclosure
+                    // row so the list doesn't grow unbounded over time.
+                    monthAwareDays(filteredHistoryDays)
                 }
 
                 DisclaimerFootnote()
@@ -432,9 +429,88 @@ struct DashboardView: View {
         return "Check back tomorrow, get some sleep."
     }
 
+    // MARK: - Month grouping
+
+    private struct MonthBlock: Identifiable {
+        let key: String
+        let label: String
+        let days: [DashboardViewModel.FlatDayGroup]
+        var dealCount: Int { days.reduce(0) { $0 + $1.deals.count } }
+        var id: String { key }
+    }
+
+    private func monthBlocks(from days: [DashboardViewModel.FlatDayGroup]) -> [MonthBlock] {
+        var index: [String: Int] = [:]
+        var buckets: [(key: String, label: String, days: [DashboardViewModel.FlatDayGroup])] = []
+        for day in days {
+            if let i = index[day.monthKey] {
+                buckets[i].days.append(day)
+            } else {
+                index[day.monthKey] = buckets.count
+                buckets.append((day.monthKey, day.monthLabel, [day]))
+            }
+        }
+        return buckets.map { MonthBlock(key: $0.key, label: $0.label, days: $0.days) }
+    }
+
+    @ViewBuilder
+    private func monthAwareDays(_ days: [DashboardViewModel.FlatDayGroup]) -> some View {
+        let blocks = monthBlocks(from: days)
+        ForEach(Array(blocks.enumerated()), id: \.element.id) { index, block in
+            if index == 0 {
+                ForEach(block.days) { day in
+                    dealDaySection(day: day)
+                }
+            } else {
+                let isExpanded = expandedMonths.contains(block.key)
+                monthDisclosureRow(block: block, isExpanded: isExpanded)
+                if isExpanded {
+                    ForEach(block.days) { day in
+                        dealDaySection(day: day, showMonthLabel: false)
+                    }
+                }
+            }
+        }
+    }
+
+    private func monthDisclosureRow(block: MonthBlock, isExpanded: Bool) -> some View {
+        Button {
+            withAnimation(.easeInOut(duration: 0.2)) {
+                if isExpanded {
+                    expandedMonths.remove(block.key)
+                } else {
+                    expandedMonths.insert(block.key)
+                }
+            }
+        } label: {
+            HStack(spacing: 8) {
+                Text(block.label)
+                    .font(.instrument(.bold, size: 15))
+                    .textCase(.uppercase)
+                    .tracking(0.8)
+                    .foregroundStyle(colors.foreground)
+                Spacer()
+                Text("\(block.dealCount) deal\(block.dealCount == 1 ? "" : "s")")
+                    .font(.instrument(size: 13))
+                    .foregroundStyle(colors.muted)
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(colors.muted)
+                    .rotationEffect(.degrees(isExpanded ? 90 : 0))
+            }
+            .padding(.horizontal, 16)
+            .padding(.top, 20)
+            .padding(.bottom, 12)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(colors.background)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+
     // MARK: - Day section
 
-    private func dealDaySection(day: DashboardViewModel.FlatDayGroup) -> some View {
+    private func dealDaySection(day: DashboardViewModel.FlatDayGroup, showMonthLabel: Bool = true) -> some View {
         Section {
             ForEach(day.deals) { deal in
                 DealRow(deal: deal, liftPct: vm.liftPct(for: deal), ftsePct: vm.ftsePct(for: deal))
@@ -448,13 +524,13 @@ struct DashboardView: View {
                 }
             }
         } header: {
-            dayHeader(day: day)
+            dayHeader(day: day, showMonthLabel: showMonthLabel)
         }
     }
 
-    private func dayHeader(day: DashboardViewModel.FlatDayGroup) -> some View {
+    private func dayHeader(day: DashboardViewModel.FlatDayGroup, showMonthLabel: Bool = true) -> some View {
         VStack(alignment: .leading, spacing: 0) {
-            if day.isFirstOfMonth {
+            if day.isFirstOfMonth && showMonthLabel {
                 Text(day.monthLabel)
                     .font(.instrument(.bold, size: 15))
                     .textCase(.uppercase)
